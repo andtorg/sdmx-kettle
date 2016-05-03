@@ -1,0 +1,3 @@
+[submodule "SDMX"]
+	path = SDMX
+	url = git@github.com:andtorg/SDMX.git
