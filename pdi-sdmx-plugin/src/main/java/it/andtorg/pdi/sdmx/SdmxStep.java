@@ -118,8 +118,7 @@ public class SdmxStep extends BaseStep implements StepInterface {
 	 * @return true to indicate that the function should be called again, false if the step is done
 	 */
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-		Dataflow df = new Dataflow();
-		System.out.println(df.toString());
+
 		// safely cast the step settings (meta) and runtime info (data) to specific implementations 
 		SdmxStepMeta meta = (SdmxStepMeta) smi;
 		SdmxStepData data = (SdmxStepData) sdi;
