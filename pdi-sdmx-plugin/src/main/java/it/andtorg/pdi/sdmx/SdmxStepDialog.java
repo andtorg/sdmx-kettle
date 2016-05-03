@@ -23,6 +23,8 @@
 package it.andtorg.pdi.sdmx;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -40,6 +42,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
@@ -77,8 +80,11 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
 	// text field holding the name of the field to add to the row stream
 	private Text wHelloFieldName;
+  private CTabFolder wTabFolder;
+  private FormData fdTabFolder;
+  private CTabItem wProviderTab;
 
-	/**
+  /**
 	 * The constructor should simply invoke super() and save the incoming meta
 	 * object to a local variable, so it can conveniently read and write settings
 	 * from/to it.
@@ -182,7 +188,20 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		fdValName.right = new FormAttachment(100, 0);
 		fdValName.top = new FormAttachment(wStepname, margin);
 		wHelloFieldName.setLayoutData(fdValName);
-		      
+
+		wTabFolder = new CTabFolder( shell, SWT.BORDER );
+		props.setLook( wTabFolder, Props.WIDGET_STYLE_TAB );
+		wTabFolder.setSimple( false );
+
+    addSettingTab();
+
+		fdTabFolder = new FormData();
+		fdTabFolder.left = new FormAttachment( 0, 0 );
+		fdTabFolder.top = new FormAttachment( wHelloFieldName, margin );
+		fdTabFolder.right = new FormAttachment( 100, 0 );
+		fdTabFolder.bottom = new FormAttachment( 100, -50 );
+		wTabFolder.setLayoutData( fdTabFolder );
+
 		// OK and cancel buttons
 		wOK = new Button(shell, SWT.PUSH);
 		wOK.setText(BaseMessages.getString(PKG, "System.Button.OK")); 
@@ -237,8 +256,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		// The "stepname" variable is inherited from BaseStepDialog
 		return stepname;
 	}
-	
-	/**
+
+  /**
 	 * This helper method puts the step configuration stored in the meta object
 	 * and puts it into the dialog controls.
 	 */
@@ -272,4 +291,14 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		// close the SWT dialog window
 		dispose();
 	}
+
+  private void addSettingTab() {
+    // ////////////////////////
+    // START OF SETTING TAB ///
+    // ////////////////////////
+
+    wProviderTab = new CTabItem( wTabFolder, SWT.NONE );
+    wProviderTab.setText( BaseMessages.getString( PKG, "SdmxDialog.SettingTab.TabTitle" ) );
+  }
+
 }
