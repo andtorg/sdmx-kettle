@@ -23,24 +23,22 @@
 package it.andtorg.pdi.sdmx;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
@@ -82,7 +80,18 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	private Text wHelloFieldName;
   private CTabFolder wTabFolder;
   private FormData fdTabFolder;
-  private CTabItem wProviderTab;
+  private CTabItem wSettingTab;
+  private ScrolledComposite wSettingsSComp;
+
+  private Composite wSettingComp;
+  private FormData fdSettingComp;
+
+  private Label wlProvider;
+  private FormData fdlProvider;
+  private CCombo wProvider;
+  private FormData fdProvider;
+
+  private int middle, margin;
 
   /**
 	 * The constructor should simply invoke super() and save the incoming meta
@@ -147,8 +156,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		shell.setLayout(formLayout);
 		shell.setText(BaseMessages.getString(PKG, "Sdmx.Shell.Title"));
 
-		int middle = props.getMiddlePct();
-		int margin = Const.MARGIN;
+		middle = props.getMiddlePct();
+		margin = Const.MARGIN;
 
 		// Stepname line
 		wlStepname = new Label(shell, SWT.RIGHT);
@@ -208,7 +217,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		wCancel = new Button(shell, SWT.PUSH);
 		wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel")); 
 
-		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, wHelloFieldName);
+		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, wTabFolder);
 
 //		 Add listeners for cancel and OK
 		lsCancel = new Listener() {
@@ -234,7 +243,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		shell.addShellListener(new ShellAdapter() {
 			public void shellClosed(ShellEvent e) {cancel();}
 		});
-		
+
+    wTabFolder.setSelection( 0 );
 		// Set/Restore the dialog size based on last position on screen
 		// The setSize() method is inherited from BaseStepDialog
 		setSize();
@@ -297,8 +307,61 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     // START OF SETTING TAB ///
     // ////////////////////////
 
-    wProviderTab = new CTabItem( wTabFolder, SWT.NONE );
-    wProviderTab.setText( BaseMessages.getString( PKG, "SdmxDialog.SettingTab.TabTitle" ) );
+    wSettingTab = new CTabItem( wTabFolder, SWT.NONE );
+    wSettingTab.setText( BaseMessages.getString( PKG, "SdmxDialog.SettingTab.TabTitle" ) );
+
+    wSettingsSComp = new ScrolledComposite( wTabFolder, SWT.V_SCROLL | SWT.H_SCROLL );
+    wSettingsSComp.setLayout( new FillLayout() );
+
+    wSettingComp = new Composite( wSettingsSComp, SWT.NONE );
+    props.setLook(wSettingComp);
+
+    FormLayout settingLayout = new FormLayout();
+    settingLayout.marginWidth = 3;
+    settingLayout.marginHeight = 3;
+
+    wSettingComp.setLayout( settingLayout );
+
+    // Sdmx Provider line
+    wlProvider = new Label(wSettingComp, SWT.RIGHT );
+    wlProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
+    props.setLook( wlProvider );
+    fdlProvider = new FormData();
+    fdlProvider.left = new FormAttachment( 0, 0 );
+    fdlProvider.top = new FormAttachment( 0, 0 );
+    fdlProvider.right = new FormAttachment( middle, -margin );
+    wlProvider.setLayoutData( fdlProvider );
+
+//    wProvider = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
+//    wProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
+//    props.setLook( wProvider );
+////    wFiletype.add( "CSV" );
+////    wFiletype.add( "Fixed" );
+////    wFiletype.select( 0 );
+////    wFiletype.addModifyListener( lsMod );
+//    fdProvider = new FormData();
+//    fdProvider.left = new FormAttachment( middle, 0 );
+//    fdProvider.top = new FormAttachment( 0, 0 );
+//    fdProvider.right = new FormAttachment( 100, 0 );
+//    wProvider.setLayoutData( fdProvider );
+    wSettingComp.pack();
+    Rectangle bounds = wSettingComp.getBounds();
+
+    wSettingsSComp.setContent( wSettingComp );
+    wSettingsSComp.setExpandHorizontal( true );
+    wSettingsSComp.setExpandVertical( true );
+    wSettingsSComp.setMinWidth( bounds.width );
+    wSettingsSComp.setMinHeight( bounds.height );
+
+    fdSettingComp = new FormData();
+    fdSettingComp.left = new FormAttachment( 0, 0 );
+    fdSettingComp.top = new FormAttachment( 0, 0 );
+    fdSettingComp.right = new FormAttachment( 100, 0 );
+    fdSettingComp.bottom = new FormAttachment( 100, 0 );
+    wSettingComp.setLayoutData( fdSettingComp );
+
+    wSettingTab.setControl( wSettingsSComp );
+
   }
 
 }
