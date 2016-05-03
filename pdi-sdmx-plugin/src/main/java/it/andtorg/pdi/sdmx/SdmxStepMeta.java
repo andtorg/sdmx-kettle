@@ -71,12 +71,12 @@ import org.w3c.dom.Node;
  */
 
 @Step(	
-		id = "DemoStep",
+		id = "SdmxStep",
 		image = "it/andtorg/pdi/sdmx/resources/demo.svg",
-		i18nPackageName="it.andtorg.pdi.sdk.samples.steps.demo",
+		i18nPackageName="it.andtorg.pdi.sdk.samples.steps.demo", // TODO: 03/05/16
 		name= "SdmxStep.Name",
 		description = "SdmxStep.TooltipDesc",
-		categoryDescription="i18n:org.pentaho.di.trans.step:BaseStep.Category.Transform"
+		categoryDescription="i18n:org.pentaho.di.trans.step:BaseStep.Category.Transform" //todo: change to input?
 )
 public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 
