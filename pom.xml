@@ -7,7 +7,11 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <groupId>it.andtorg.pdi-plugins</groupId>
   <artifactId>sdmx-kettle</artifactId>
   <version>0.0.1</version>
-  <packaging>jar</packaging>
+  <modules>
+    <module>pdi-sdmx-plugin</module>
+    <module>SDMX/JAVA</module>
+  </modules>
+  <packaging>pom</packaging>
 
   <properties>
     <kettle.folder>/home/andrea/Bi/Kff/Software/pdi/6.0.0</kettle.folder>
@@ -15,6 +19,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <swt.version>4.3</swt.version>
     <dependency.plugin.version>2.10</dependency.plugin.version>
     <resource.plugin.version>2.7</resource.plugin.version>
+    <sdmx.java.version>1.6</sdmx.java.version>
   </properties>
 
   <profiles>
@@ -34,14 +39,13 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
                 <configuration>
                   <artifactItems>
                     <artifactItem>
-                      <groupId>it.andtorg.pdi-plugins</groupId>
-                      <artifactId>sdmx-kettle</artifactId>
-                      <version>${project.version}</version>
+                      <groupId>it.bancaditalia.oss</groupId>
+                      <artifactId>sdmx</artifactId>
+                      <version>${sdmx.java.version}</version>
                       <overWrite>true</overWrite>
-                      <outputDirectory>${kettle.folder}/plugins/steps/sdmx</outputDirectory>
+                      <outputDirectory>${kettle.folder}/plugins/steps/sdmx/lib</outputDirectory>
                     </artifactItem>
                   </artifactItems>
-                  <outputDirectory>${project.build.directory}/wars</outputDirectory>
                   <overWriteReleases>false</overWriteReleases>
                   <overWriteSnapshots>true</overWriteSnapshots>
                 </configuration>
@@ -53,16 +57,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
             <version>${resource.plugin.version}</version>
           </plugin>
         </plugins>
-        <resources>
-          <resource>
-            <directory>src/main/java/it/andtorg/pdi/sdmx/resources</directory>
-            <targetPath>${project.build.outputDirectory}/it/andtorg/pdi/sdmx/resources</targetPath>
-          </resource>
-          <resource>
-            <directory>src/main/java/it/andtorg/pdi/sdmx/messages</directory>
-            <targetPath>${project.build.outputDirectory}/it/andtorg/pdi/sdmx/messages</targetPath>
-          </resource>
-        </resources>
+
       </build>
     </profile>
     <profile>
@@ -74,78 +69,9 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
             <version>${resource.plugin.version}</version>
           </plugin>
         </plugins>
-        <resources>
-          <resource>
-            <directory>src/main/java/it/andtorg/pdi/sdmx/resources</directory>
-            <targetPath>${project.build.outputDirectory}/it/andtorg/pdi/sdmx/resources</targetPath>
-          </resource>
-          <resource>
-            <directory>src/main/java/it/andtorg/pdi/sdmx/messages</directory>
-            <targetPath>${project.build.outputDirectory}/it/andtorg/pdi/sdmx/messages</targetPath>
-          </resource>
-        </resources>
+
       </build>
     </profile>
   </profiles>
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-dependency-plugin</artifactId>
-      <version>${dependency.plugin.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.swt.org.eclipse.swt.win32.win32.x86_64.4.3.swt</groupId>
-      <artifactId>org.eclipse.swt.win32.win32.x86_64</artifactId>
-      <version>${swt.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>metastore</artifactId>
-      <version>${kettle.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>pentaho-kettle</groupId>
-      <artifactId>kettle-core</artifactId>
-      <version>${kettle.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>pentaho-kettle</groupId>
-      <artifactId>kettle-engine</artifactId>
-      <version>${kettle.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>pentaho-kettle</groupId>
-      <artifactId>kettle-ui-swt</artifactId>
-      <version>${kettle.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>*</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-  </dependencies>
 
-  <repositories>
-    <repository>
-      <id>PentahoRepo</id>
-      <name>Pentaho repository</name>
-      <url>http://nexus.pentaho.org/content/groups/omni</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-    </repository>
-
-  </repositories>
 </project>
