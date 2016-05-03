@@ -332,18 +332,19 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     fdlProvider.right = new FormAttachment( middle, -margin );
     wlProvider.setLayoutData( fdlProvider );
 
-//    wProvider = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
-//    wProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
-//    props.setLook( wProvider );
+    wProvider = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
+    wProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
+    props.setLook( wProvider );
 ////    wFiletype.add( "CSV" );
 ////    wFiletype.add( "Fixed" );
 ////    wFiletype.select( 0 );
 ////    wFiletype.addModifyListener( lsMod );
-//    fdProvider = new FormData();
-//    fdProvider.left = new FormAttachment( middle, 0 );
-//    fdProvider.top = new FormAttachment( 0, 0 );
-//    fdProvider.right = new FormAttachment( 100, 0 );
-//    wProvider.setLayoutData( fdProvider );
+    fdProvider = new FormData();
+    fdProvider.left = new FormAttachment( middle, 0 );
+    fdProvider.top = new FormAttachment( 0, 0 );
+    fdProvider.right = new FormAttachment( 100, 0 );
+    wProvider.setLayoutData( fdProvider );
+
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
 
