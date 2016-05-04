@@ -22,23 +22,24 @@
 
 package it.andtorg.pdi.sdmx;
 
+import it.bancaditalia.oss.sdmx.client.Provider;
+import it.bancaditalia.oss.sdmx.client.SDMXClientFactory;
+import it.bancaditalia.oss.sdmx.helper.ProviderActionListener;
+import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.ShellAdapter;
-import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.*;
+
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
@@ -46,6 +47,8 @@ import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import java.util.*;
+import java.util.List;
 
 /**
  * This class is part of the demo step plug-in implementation.
@@ -75,6 +78,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	// the dialog reads the settings from it when opening
 	// the dialog writes the settings to it when confirmed 
 	private SdmxStepMeta meta;
+  private ModifyListener lsMod;
+
+  private boolean gotProviders;
 
 	// text field holding the name of the field to add to the row stream
 	private Text wHelloFieldName;
@@ -140,7 +146,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		
 		// The ModifyListener used on all controls. It will update the meta object to 
 		// indicate that changes are being made.
-		ModifyListener lsMod = new ModifyListener() {
+		lsMod = new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				meta.setChanged();
 			}
@@ -333,18 +339,28 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wlProvider.setLayoutData( fdlProvider );
 
     wProvider = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
-    wProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
+    wProvider.setEditable( true );
     props.setLook( wProvider );
-////    wFiletype.add( "CSV" );
-////    wFiletype.add( "Fixed" );
-////    wFiletype.select( 0 );
-////    wFiletype.addModifyListener( lsMod );
+    wProvider.addModifyListener( lsMod );
+
     fdProvider = new FormData();
     fdProvider.left = new FormAttachment( middle, 0 );
     fdProvider.top = new FormAttachment( 0, 0 );
     fdProvider.right = new FormAttachment( 100, 0 );
     wProvider.setLayoutData( fdProvider );
 
+    wProvider.addFocusListener( new FocusListener() {
+      public void focusLost( org.eclipse.swt.events.FocusEvent e ) {
+      }
+
+      public void focusGained( org.eclipse.swt.events.FocusEvent e ) {
+        Cursor busy = new Cursor( shell.getDisplay(), SWT.CURSOR_WAIT );
+        shell.setCursor( busy );
+        setProviders();
+        shell.setCursor( null );
+        busy.dispose();
+      }
+    } );
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
 
@@ -363,6 +379,34 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
     wSettingTab.setControl( wSettingsSComp );
 
+  }
+
+  private void setProviders(){
+
+    // Providers list of the text file:
+    if ( !gotProviders ) {
+      gotProviders = true;
+
+      wProvider.removeAll();
+
+      List<Provider> providers = new ArrayList<>(SDMXClientFactory.getProviders().values());
+      Collections.sort(providers, new ProviderComparator());
+      for (Iterator<Provider> iterator = providers.iterator(); iterator.hasNext();) {
+        Provider p = iterator.next();
+        String provider = p.getName() + ": " + p.getDescription();
+        wProvider.add(provider);
+//        menuItem.addActionListener(new ProviderActionListener(this));
+      }
+
+
+
+//      // Now select the default!
+//      String defEncoding = Const.getEnvironmentVariable( "file.encoding", "UTF-8" );
+//      int idx = Const.indexOfString( defEncoding, wEncoding.getItems() );
+//      if ( idx >= 0 ) {
+//        wProvider.select( idx );
+//      }
+    }
   }
 
 }
