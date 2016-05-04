@@ -24,6 +24,7 @@ package it.andtorg.pdi.sdmx;
 
 import java.util.List;
 
+import it.bancaditalia.oss.sdmx.client.Provider;
 import org.eclipse.swt.widgets.Shell;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
@@ -92,7 +93,10 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 */
 	private String outputField;
 
-	/**
+  private Provider provider;
+
+
+  /**
 	 * Constructor should call super() to make sure the base class has a chance to initialize properly.
 	 */
 	public SdmxStepMeta() {
@@ -158,6 +162,14 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void setOutputField(String outputField) {
 		this.outputField = outputField;
 	}
+
+  public Provider getProvider() {
+    return provider;
+  }
+
+  public void setProvider(Provider provider) {
+    this.provider = provider;
+  }
 	
 	/**
 	 * This method is used when a step is duplicated in Spoon. It needs to return a deep copy of this
