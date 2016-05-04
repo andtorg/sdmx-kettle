@@ -44,6 +44,8 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
+import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
@@ -78,6 +80,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	// the dialog reads the settings from it when opening
 	// the dialog writes the settings to it when confirmed 
 	private SdmxStepMeta meta;
+  private SdmxProviderHandler providerHandler;
   private ModifyListener lsMod;
 
   private boolean gotProviders;
@@ -97,13 +100,16 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private CCombo wProvider;
   private FormData fdProvider;
 
+  private TableView wFlows;
+  private FormData fdFlows;
+
   private int middle, margin;
 
   /**
 	 * The constructor should simply invoke super() and save the incoming meta
 	 * object to a local variable, so it can conveniently read and write settings
 	 * from/to it.
-	 * 
+	 *
 	 * @param parent 	the SWT shell to open the dialog in
 	 * @param in		the meta object holding the step's settings
 	 * @param transMeta	transformation description
@@ -112,6 +118,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	public SdmxStepDialog(Shell parent, Object in, TransMeta transMeta, String sname) {
 		super(parent, (BaseStepMeta) in, transMeta, sname);
 		meta = (SdmxStepMeta) in;
+    providerHandler = new SdmxProviderHandler();
 	}
 
 	/**
@@ -261,12 +268,16 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		// restore the changed flag to original value, as the modify listeners fire during dialog population 
 		meta.setChanged(changed);
 
-		// open dialog and enter event loop 
+
+    getData( meta );
+
+		// open dialog and enter event loop
 		shell.open();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
 				display.sleep();
 		}
+
 
 		// at this point the dialog has closed, so either ok() or cancel() have been executed
 		// The "stepname" variable is inherited from BaseStepDialog
@@ -299,12 +310,19 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	 * Called when the user confirms the dialog
 	 */
 	private void ok() {
+    if ( Const.isEmpty( wStepname.getText() ) ) {
+      return;
+    }
+
 		// The "stepname" variable will be the return value for the open() method. 
 		// Setting to step name from the dialog control
 		stepname = wStepname.getText(); 
 		// Setting the  settings to the meta object
 		meta.setOutputField(wHelloFieldName.getText());
 		// close the SWT dialog window
+
+    saveMeta( meta );
+
 		dispose();
 	}
 
@@ -361,6 +379,31 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         busy.dispose();
       }
     } );
+
+    wProvider.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        String provider = ((CCombo)e.getSource()).getText().split(":")[0];
+        System.out.println(provider);
+      }
+    });
+
+    ColumnInfo[] colinfo =
+        new ColumnInfo[] {
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowIdColumn.Column" ),
+                ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowDescription.Column" ),
+                ColumnInfo.COLUMN_TYPE_TEXT, false )};
+
+
+    wFlows = new TableView( transMeta, wSettingComp, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER, colinfo, 1, lsMod, props);
+    props.setLook( wFlows );
+    fdFlows = new FormData();
+    fdFlows.left = new FormAttachment( middle, 0 );
+    fdFlows.right = new FormAttachment( 100, 0 );
+    fdFlows.top = new FormAttachment( wProvider, margin );
+    wFlows.setLayoutData( fdFlows );
+
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
 
@@ -384,29 +427,33 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private void setProviders(){
 
     // Providers list of the text file:
-    if ( !gotProviders ) {
+    if ( !gotProviders ) { // TODO: what is this for?
       gotProviders = true;
 
       wProvider.removeAll();
 
-      List<Provider> providers = new ArrayList<>(SDMXClientFactory.getProviders().values());
+      List<Provider> providers = providerHandler.getProviders();
       Collections.sort(providers, new ProviderComparator());
+      wProvider.add(""); // add a blank line for deselection
       for (Iterator<Provider> iterator = providers.iterator(); iterator.hasNext();) {
         Provider p = iterator.next();
         String provider = p.getName() + ": " + p.getDescription();
         wProvider.add(provider);
-//        menuItem.addActionListener(new ProviderActionListener(this));
       }
-
-
-
-//      // Now select the default!
-//      String defEncoding = Const.getEnvironmentVariable( "file.encoding", "UTF-8" );
-//      int idx = Const.indexOfString( defEncoding, wEncoding.getItems() );
-//      if ( idx >= 0 ) {
-//        wProvider.select( idx );
-//      }
     }
+  }
+
+  private void getData ( SdmxStepMeta meta ){
+    if ( meta.getProvider() != null ) {
+      wProvider.setText( meta.getProvider().getName() + ": " + meta.getProvider().getDescription());
+    }
+  }
+
+  private void saveMeta( SdmxStepMeta stepMeta) {
+    stepname = wStepname.getText(); // return value
+
+    stepMeta.setProvider(providerHandler.getProviderByName(wProvider.getText().split(":")[0]));
+
   }
 
 }
