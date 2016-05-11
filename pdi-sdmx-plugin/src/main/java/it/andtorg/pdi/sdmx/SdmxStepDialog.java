@@ -23,8 +23,6 @@
 package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.client.Provider;
-import it.bancaditalia.oss.sdmx.client.SDMXClientFactory;
-import it.bancaditalia.oss.sdmx.helper.ProviderActionListener;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -44,8 +42,6 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
-import org.pentaho.di.ui.core.widget.ColumnInfo;
-import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
@@ -100,7 +96,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private CCombo wProvider;
   private FormData fdProvider;
 
-  private TableView wFlows;
+  private Label wlFlow;
+  private FormData fdlFlow;
+  private CCombo wFlow;
   private FormData fdFlows;
 
   private int middle, margin;
@@ -388,21 +386,35 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       }
     });
 
-    ColumnInfo[] colinfo =
-        new ColumnInfo[] {
-            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowIdColumn.Column" ),
-                ColumnInfo.COLUMN_TYPE_TEXT, false ),
-            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowDescription.Column" ),
-                ColumnInfo.COLUMN_TYPE_TEXT, false )};
+//    ColumnInfo[] colinfo =
+//        new ColumnInfo[] {
+//            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowIdColumn.Column" ),
+//                ColumnInfo.COLUMN_TYPE_TEXT, false ),
+//            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowDescription.Column" ),
+//                ColumnInfo.COLUMN_TYPE_TEXT, false )};
 
 
-    wFlows = new TableView( transMeta, wSettingComp, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER, colinfo, 1, lsMod, props);
-    props.setLook( wFlows );
+    // Flow line
+    wlFlow = new Label(wSettingComp, SWT.RIGHT );
+    wlFlow.setText( BaseMessages.getString( PKG, "SdmxDialog.Flow.Label" ) );
+    props.setLook( wlFlow );
+    fdlFlow = new FormData();
+    fdlFlow.left = new FormAttachment( 0, 0 );
+    fdlFlow.top = new FormAttachment( wProvider, margin );
+    fdlFlow.right = new FormAttachment( middle, -margin );
+    wlFlow.setLayoutData( fdlFlow);
+
+
+    wFlow = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
+    wFlow.setEditable( true );
+
+    props.setLook(wFlow);
     fdFlows = new FormData();
     fdFlows.left = new FormAttachment( middle, 0 );
     fdFlows.right = new FormAttachment( 100, 0 );
     fdFlows.top = new FormAttachment( wProvider, margin );
-    wFlows.setLayoutData( fdFlows );
+    wFlow.setLayoutData( fdFlows );
+
 
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
