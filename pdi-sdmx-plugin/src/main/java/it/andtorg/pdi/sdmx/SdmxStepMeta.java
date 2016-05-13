@@ -24,6 +24,7 @@ package it.andtorg.pdi.sdmx;
 
 import java.util.List;
 
+import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.eclipse.swt.widgets.Shell;
 import org.pentaho.di.core.CheckResult;
@@ -92,8 +93,10 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * Stores the name of the field added to the row-stream. 
 	 */
 	private String outputField;
+  private SdmxProviderHandler providerHandler = SdmxProviderHandler.INSTANCE;
 
   private Provider provider;
+	private Dataflow dataflow;
 
 
   /**
@@ -170,8 +173,16 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
   public void setProvider(Provider provider) {
     this.provider = provider;
   }
-	
-	/**
+
+  public Dataflow getDataflow() {
+    return dataflow;
+  }
+
+  public void setDataflow( Dataflow dataflow ) {
+    this.dataflow = dataflow;
+  }
+
+  /**
 	 * This method is used when a step is duplicated in Spoon. It needs to return a deep copy of this
 	 * step meta object. Be sure to create proper deep copies if the step configuration is stored in
 	 * modifiable objects.
@@ -195,10 +206,18 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * @return a string containing the XML serialization of this step
 	 */
 	public String getXML() throws KettleValueException {
-		
-		// only one field to serialize
-		String xml = XMLHandler.addTagValue("outputfield", outputField);
-		return xml;
+		StringBuilder retval = new StringBuilder( 1000 );
+
+    retval.append( "    " ).append( XMLHandler.addTagValue( "provider_id", provider == null ? "" : provider.getName() ) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "provider_desc", provider == null ? "" : provider.getDescription() ) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "flow_id", dataflow == null ? "" : dataflow.getId() ) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "flow_desc", dataflow == null ? "" : dataflow.getDescription() ) );
+
+
+    //todo delete; it was the demo
+    retval.append( "    " ).append( XMLHandler.addTagValue( "outputfield", outputField ) );
+
+		return retval.toString();
 	}
 
 	/**
@@ -215,6 +234,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 
 		try {
 			setOutputField(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "outputfield")));
+      setProvider( providerHandler.getProviderByName(
+          XMLHandler.getNodeValue (XMLHandler.getSubNode( stepnode, "provider_id" ) ) ) );
 		} catch (Exception e) {
 			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
 		}
