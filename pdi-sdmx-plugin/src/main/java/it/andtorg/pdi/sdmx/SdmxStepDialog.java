@@ -22,8 +22,11 @@
 
 package it.andtorg.pdi.sdmx;
 
+import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.client.Provider;
+import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
+import it.bancaditalia.oss.sdmx.util.SdmxException;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -42,9 +45,12 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
+import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
+import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+
 import java.util.*;
 import java.util.List;
 
@@ -77,6 +83,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	// the dialog writes the settings to it when confirmed 
 	private SdmxStepMeta meta;
   private SdmxProviderHandler providerHandler;
+  private StepDialogController dialogController;
   private ModifyListener lsMod;
 
   private boolean gotProviders;
@@ -97,9 +104,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private FormData fdProvider;
 
   private Label wlFlow;
-  private FormData fdlFlow;
-  private CCombo wFlow;
-  private FormData fdFlows;
+  private Text wFlow;
+  private Button wbBrowseFlows;
+  private FormData fdlFlow, fdFlows, fdBrowseFlows;
 
   private int middle, margin;
 
@@ -116,7 +123,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	public SdmxStepDialog(Shell parent, Object in, TransMeta transMeta, String sname) {
 		super(parent, (BaseStepMeta) in, transMeta, sname);
 		meta = (SdmxStepMeta) in;
-    providerHandler = new SdmxProviderHandler();
+    providerHandler = SdmxProviderHandler.INSTANCE;
+    dialogController = new StepDialogController();
 	}
 
 	/**
@@ -261,6 +269,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		setSize();
 
 		// populate the dialog with the values from the meta object
+    // TODO: 13/05/16 it does the same things as getData(). Delete one of them
 		populateDialog();
 		
 		// restore the changed flag to original value, as the modify listeners fire during dialog population 
@@ -381,8 +390,21 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wProvider.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        String provider = ((CCombo)e.getSource()).getText().split(":")[0];
-        System.out.println(provider);
+        dialogController.setChosenProvider( providerHandler.getProviderByName(((CCombo)e.getSource()).getText().split(":")[0]) );
+//        if (p != null){
+//          Map<String,String> flows = null;
+//          try {
+//            flows = SdmxClientHandler.getFlows(p.getName(),null);
+//          } catch (SdmxException e1) {
+//            e1.printStackTrace();
+//          }
+//        }
+
+//        for (String f : flows.keySet()){
+//          System.out.println(f + ": " + flows.get(f));
+//        }
+
+        // TODO: 11/05/16 add method to choose flows
       }
     });
 
@@ -404,16 +426,56 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     fdlFlow.right = new FormAttachment( middle, -margin );
     wlFlow.setLayoutData( fdlFlow);
 
+    // Button for browsing flows
+    wbBrowseFlows = new Button(wSettingComp,SWT.PUSH);
+    wbBrowseFlows.setText( BaseMessages.getString( PKG, "SdmxDialog.BrowseFlows.Button" ));
+    props.setLook(wbBrowseFlows);
+    fdBrowseFlows = new FormData();
+    fdBrowseFlows.right = new FormAttachment( 100,0 );
+    fdBrowseFlows.top = new FormAttachment( wProvider,margin );
+    wbBrowseFlows.setLayoutData( fdBrowseFlows );
 
-    wFlow = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
+    wFlow = new Text(wSettingComp, SWT.BORDER | SWT.SINGLE | SWT.LEFT );
     wFlow.setEditable( true );
-
     props.setLook(wFlow);
     fdFlows = new FormData();
     fdFlows.left = new FormAttachment( middle, 0 );
-    fdFlows.right = new FormAttachment( 100, 0 );
+    fdFlows.right = new FormAttachment( wbBrowseFlows, -margin );
     fdFlows.top = new FormAttachment( wProvider, margin );
     wFlow.setLayoutData( fdFlows );
+
+
+    wbBrowseFlows.addListener(SWT.Selection, new Listener() {
+      @Override
+      public void handleEvent(Event e) {
+        // TODO: generate an array of flows for the selected  provider
+
+        if (dialogController.getChosenProvider() !=null ){
+          Provider p = dialogController.getChosenProvider();
+          try {
+            dialogController.setAvailableFlows(SdmxClientHandler.getFlows(p.getName(),null));
+          } catch (SdmxException e1) {
+            e1.printStackTrace();
+          }
+          Map <String,String> flows = dialogController.getAvailableFlows();
+          String[] flowDesc = new String[flows.values().size()];
+          int i = 0;
+          for ( String k : flows.keySet() ){
+            flowDesc[i++] = k + " - " + flows.get(k);
+          }
+          EnterSelectionDialog esd = new EnterSelectionDialog( shell, flowDesc,
+              BaseMessages.getString( PKG, "FlowDialog.SelectInfoType.DialogTitle"),
+              BaseMessages.getString( PKG, "FlowDialog.SelectInfoType.DialogMessage") );
+          String string = esd.open();
+          if ( string != null ) {
+            dialogController.setChosenFlowFrom(string);
+            wFlow.setText(string);
+          }
+          meta.setChanged();
+        }
+        }
+        // open an EnterSelectionDialog to allow the choice of the flow
+    });
 
 
     wSettingComp.pack();
@@ -455,16 +517,28 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     }
   }
 
+  private void setFlows(){
+    System.out.println("flowing in the wind");
+  }
+
   private void getData ( SdmxStepMeta meta ){
     if ( meta.getProvider() != null ) {
+      dialogController.setChosenProvider( meta.getProvider() );
       wProvider.setText( meta.getProvider().getName() + ": " + meta.getProvider().getDescription());
+    }
+
+    if ( meta.getDataflow() != null ){
+      Dataflow df = meta.getDataflow();
+      dialogController.setChosenFlow( df );
+      wFlow.setText( df.getId() + " - " + df.getDescription() );
     }
   }
 
   private void saveMeta( SdmxStepMeta stepMeta) {
     stepname = wStepname.getText(); // return value
 
-    stepMeta.setProvider(providerHandler.getProviderByName(wProvider.getText().split(":")[0]));
+    stepMeta.setProvider( dialogController.getChosenProvider() );
+    stepMeta.setDataflow( dialogController.getChosenFlow() );
 
   }
 
