@@ -11,11 +11,12 @@ import java.util.Map;
 /**
  * Created by andrea on 04/05/16.
  */
-public class SdmxProviderHandler {
-  private List<Provider> providers;
+public enum SdmxProviderHandler {
+  INSTANCE;
+  List<Provider> providers;
+  Map<String, Provider> nameToProviders;
 
-  private Map<String, Provider> nameToProviders;
-  public SdmxProviderHandler() {
+  SdmxProviderHandler() {
     this.providers = new ArrayList<>(SDMXClientFactory.getProviders().values());
     nameToProviders = new HashMap<>();
     for (Provider p : providers){
