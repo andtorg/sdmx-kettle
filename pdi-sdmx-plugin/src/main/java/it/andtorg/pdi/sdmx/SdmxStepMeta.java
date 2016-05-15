@@ -103,7 +103,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * Constructor should call super() to make sure the base class has a chance to initialize properly.
 	 */
 	public SdmxStepMeta() {
-		super(); 
+		super();
+    setDataflow( new Dataflow() );
 	}
 	
 	/**
@@ -205,7 +206,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * 
 	 * @return a string containing the XML serialization of this step
 	 */
-	public String getXML() throws KettleValueException {
+	public String xgetXML() throws KettleValueException {
 		StringBuilder retval = new StringBuilder( 1000 );
 
     retval.append( "    " ).append( XMLHandler.addTagValue( "provider_id", provider == null ? "" : provider.getName() ) );
@@ -236,6 +237,10 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 			setOutputField(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "outputfield")));
       setProvider( providerHandler.getProviderByName(
           XMLHandler.getNodeValue (XMLHandler.getSubNode( stepnode, "provider_id" ) ) ) );
+
+      dataflow.setId( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_id" ) ) );
+      dataflow.setName( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_desc" ) ) ); //todo open issue on sdmx codebase for API getter/setter not clear
+
 		} catch (Exception e) {
 			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
 		}
