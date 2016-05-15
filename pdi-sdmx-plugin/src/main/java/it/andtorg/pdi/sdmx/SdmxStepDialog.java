@@ -23,6 +23,7 @@
 package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
+import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
@@ -46,6 +47,7 @@ import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.trans.step.BaseStepMeta;
@@ -83,7 +85,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	// the dialog writes the settings to it when confirmed 
 	private SdmxStepMeta meta;
   private SdmxProviderHandler providerHandler;
-  private StepDialogController dialogController;
+  private SdmxDialogData sdmxDialogData;
   private ModifyListener lsMod;
 
   private boolean gotProviders;
@@ -108,6 +110,13 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private Button wbBrowseFlows;
   private FormData fdlFlow, fdFlows, fdBrowseFlows;
 
+  private Button wbDimensions;
+  private TableView wDimensionList;
+  private FormData fdDimensions, fdDimensionList;
+
+  private TableView wCodeList;
+  private FormData fdCodeList;
+
   private int middle, margin;
 
   /**
@@ -124,7 +133,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		super(parent, (BaseStepMeta) in, transMeta, sname);
 		meta = (SdmxStepMeta) in;
     providerHandler = SdmxProviderHandler.INSTANCE;
-    dialogController = new StepDialogController();
+    sdmxDialogData = new SdmxDialogData();
 	}
 
 	/**
@@ -296,7 +305,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	 * and puts it into the dialog controls.
 	 */
 	private void populateDialog() {
-		wStepname.selectAll();
+		wStepname.selectAll(); //todo whats this for?
 		wHelloFieldName.setText(meta.getOutputField());	
 	}
 
@@ -353,130 +362,17 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
     wSettingComp.setLayout( settingLayout );
 
-    // Sdmx Provider line
-    wlProvider = new Label(wSettingComp, SWT.RIGHT );
-    wlProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
-    props.setLook( wlProvider );
-    fdlProvider = new FormData();
-    fdlProvider.left = new FormAttachment( 0, 0 );
-    fdlProvider.top = new FormAttachment( 0, 0 );
-    fdlProvider.right = new FormAttachment( middle, -margin );
-    wlProvider.setLayoutData( fdlProvider );
+    addProviderLabel();
+    addProviderCombo();
 
-    wProvider = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
-    wProvider.setEditable( true );
-    props.setLook( wProvider );
-    wProvider.addModifyListener( lsMod );
+    addFlowLabel();
+    addFlowTextInput();
+    addFlowBrowsingButton();
 
-    fdProvider = new FormData();
-    fdProvider.left = new FormAttachment( middle, 0 );
-    fdProvider.top = new FormAttachment( 0, 0 );
-    fdProvider.right = new FormAttachment( 100, 0 );
-    wProvider.setLayoutData( fdProvider );
+    addDimensionTableView();
+    addDimensionButton();
 
-    wProvider.addFocusListener( new FocusListener() {
-      public void focusLost( org.eclipse.swt.events.FocusEvent e ) {
-      }
-
-      public void focusGained( org.eclipse.swt.events.FocusEvent e ) {
-        Cursor busy = new Cursor( shell.getDisplay(), SWT.CURSOR_WAIT );
-        shell.setCursor( busy );
-        setProviders();
-        shell.setCursor( null );
-        busy.dispose();
-      }
-    } );
-
-    wProvider.addSelectionListener(new SelectionAdapter() {
-      @Override
-      public void widgetSelected(SelectionEvent e) {
-        dialogController.setChosenProvider( providerHandler.getProviderByName(((CCombo)e.getSource()).getText().split(":")[0]) );
-//        if (p != null){
-//          Map<String,String> flows = null;
-//          try {
-//            flows = SdmxClientHandler.getFlows(p.getName(),null);
-//          } catch (SdmxException e1) {
-//            e1.printStackTrace();
-//          }
-//        }
-
-//        for (String f : flows.keySet()){
-//          System.out.println(f + ": " + flows.get(f));
-//        }
-
-        // TODO: 11/05/16 add method to choose flows
-      }
-    });
-
-//    ColumnInfo[] colinfo =
-//        new ColumnInfo[] {
-//            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowIdColumn.Column" ),
-//                ColumnInfo.COLUMN_TYPE_TEXT, false ),
-//            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FlowDescription.Column" ),
-//                ColumnInfo.COLUMN_TYPE_TEXT, false )};
-
-
-    // Flow line
-    wlFlow = new Label(wSettingComp, SWT.RIGHT );
-    wlFlow.setText( BaseMessages.getString( PKG, "SdmxDialog.Flow.Label" ) );
-    props.setLook( wlFlow );
-    fdlFlow = new FormData();
-    fdlFlow.left = new FormAttachment( 0, 0 );
-    fdlFlow.top = new FormAttachment( wProvider, margin );
-    fdlFlow.right = new FormAttachment( middle, -margin );
-    wlFlow.setLayoutData( fdlFlow);
-
-    // Button for browsing flows
-    wbBrowseFlows = new Button(wSettingComp,SWT.PUSH);
-    wbBrowseFlows.setText( BaseMessages.getString( PKG, "SdmxDialog.BrowseFlows.Button" ));
-    props.setLook(wbBrowseFlows);
-    fdBrowseFlows = new FormData();
-    fdBrowseFlows.right = new FormAttachment( 100,0 );
-    fdBrowseFlows.top = new FormAttachment( wProvider,margin );
-    wbBrowseFlows.setLayoutData( fdBrowseFlows );
-
-    wFlow = new Text(wSettingComp, SWT.BORDER | SWT.SINGLE | SWT.LEFT );
-    wFlow.setEditable( true );
-    props.setLook(wFlow);
-    fdFlows = new FormData();
-    fdFlows.left = new FormAttachment( middle, 0 );
-    fdFlows.right = new FormAttachment( wbBrowseFlows, -margin );
-    fdFlows.top = new FormAttachment( wProvider, margin );
-    wFlow.setLayoutData( fdFlows );
-
-
-    wbBrowseFlows.addListener(SWT.Selection, new Listener() {
-      @Override
-      public void handleEvent(Event e) {
-        // TODO: generate an array of flows for the selected  provider
-
-        if (dialogController.getChosenProvider() !=null ){
-          Provider p = dialogController.getChosenProvider();
-          try {
-            dialogController.setAvailableFlows(SdmxClientHandler.getFlows(p.getName(),null));
-          } catch (SdmxException e1) {
-            e1.printStackTrace();
-          }
-          Map <String,String> flows = dialogController.getAvailableFlows();
-          String[] flowDesc = new String[flows.values().size()];
-          int i = 0;
-          for ( String k : flows.keySet() ){
-            flowDesc[i++] = k + " - " + flows.get(k);
-          }
-          EnterSelectionDialog esd = new EnterSelectionDialog( shell, flowDesc,
-              BaseMessages.getString( PKG, "FlowDialog.SelectInfoType.DialogTitle"),
-              BaseMessages.getString( PKG, "FlowDialog.SelectInfoType.DialogMessage") );
-          String string = esd.open();
-          if ( string != null ) {
-            dialogController.setChosenFlowFrom(string);
-            wFlow.setText(string);
-          }
-          meta.setChanged();
-        }
-        }
-        // open an EnterSelectionDialog to allow the choice of the flow
-    });
-
+    addCodeListTableView();
 
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
@@ -495,7 +391,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wSettingComp.setLayoutData( fdSettingComp );
 
     wSettingTab.setControl( wSettingsSComp );
-
   }
 
   private void setProviders(){
@@ -523,13 +418,13 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
   private void getData ( SdmxStepMeta meta ){
     if ( meta.getProvider() != null ) {
-      dialogController.setChosenProvider( meta.getProvider() );
+      sdmxDialogData.setChosenProvider( meta.getProvider() );
       wProvider.setText( meta.getProvider().getName() + ": " + meta.getProvider().getDescription());
     }
 
     if ( meta.getDataflow() != null ){
       Dataflow df = meta.getDataflow();
-      dialogController.setChosenFlow( df );
+      sdmxDialogData.setChosenFlow( df );
       wFlow.setText( df.getId() + " - " + df.getDescription() );
     }
   }
@@ -537,9 +432,212 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private void saveMeta( SdmxStepMeta stepMeta) {
     stepname = wStepname.getText(); // return value
 
-    stepMeta.setProvider( dialogController.getChosenProvider() );
-    stepMeta.setDataflow( dialogController.getChosenFlow() );
+    stepMeta.setProvider( sdmxDialogData.getChosenProvider() );
+    stepMeta.setDataflow( sdmxDialogData.getChosenFlow() );
 
   }
 
+  private String concatenateArrayValues ( String[] arr ){
+    StringBuilder builder = new StringBuilder();
+    for (String s : arr) {
+      if (builder.length() > 0) {
+        builder.append("+");
+      }
+      builder.append(s);
+    }
+    return builder.toString();
+  }
+
+  private void addProviderLabel(){
+    wlProvider = new Label(wSettingComp, SWT.RIGHT );
+    wlProvider.setText( BaseMessages.getString( PKG, "SdmxDialog.Provider.Label" ) );
+    props.setLook( wlProvider );
+    fdlProvider = new FormData();
+    fdlProvider.left = new FormAttachment( 0, 0 );
+    fdlProvider.top = new FormAttachment( 0, 0 );
+    fdlProvider.right = new FormAttachment( 5 , -margin );
+    wlProvider.setLayoutData( fdlProvider );
+  }
+
+  private void addProviderCombo(){
+    wProvider = new CCombo(wSettingComp, SWT.BORDER | SWT.READ_ONLY );
+    wProvider.setEditable( true );
+    props.setLook( wProvider );
+    wProvider.addModifyListener( lsMod );
+
+    fdProvider = new FormData();
+    fdProvider.left = new FormAttachment( wlProvider , margin );
+    fdProvider.top = new FormAttachment( 0, 0 );
+    fdProvider.right = new FormAttachment( middle , 0 );
+    wProvider.setLayoutData( fdProvider );
+
+    wProvider.addFocusListener( new FocusListener() {
+      public void focusLost( org.eclipse.swt.events.FocusEvent e ) {
+      }
+
+      public void focusGained( org.eclipse.swt.events.FocusEvent e ) {
+        Cursor busy = new Cursor( shell.getDisplay(), SWT.CURSOR_WAIT );
+        shell.setCursor( busy );
+        setProviders();
+        shell.setCursor( null );
+        busy.dispose();
+      }
+    } );
+
+    wProvider.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        sdmxDialogData.setChosenProvider( providerHandler.getProviderByName(((CCombo)e.getSource()).getText().split(":")[0]) );
+      }
+    });
+
+  }
+
+  private void addFlowLabel(){
+    wlFlow = new Label(wSettingComp, SWT.RIGHT );
+    wlFlow.setText( BaseMessages.getString( PKG, "SdmxDialog.Flow.Label" ) );
+    props.setLook( wlFlow );
+    fdlFlow = new FormData();
+    fdlFlow.left = new FormAttachment( 0, 0 );
+    fdlFlow.top = new FormAttachment( wProvider, margin );
+    fdlFlow.right = new FormAttachment( 5, -margin );
+    wlFlow.setLayoutData( fdlFlow);
+  }
+
+  private void addFlowTextInput(){
+    wFlow = new Text(wSettingComp, SWT.BORDER | SWT.SINGLE | SWT.LEFT );
+    wFlow.setEditable( true );
+    props.setLook(wFlow);
+    fdFlows = new FormData();
+    fdFlows.left = new FormAttachment( wlFlow , margin );
+    fdFlows.right = new FormAttachment( middle , 0 );
+    fdFlows.top = new FormAttachment( wProvider, margin );
+    wFlow.setLayoutData( fdFlows );
+  }
+
+  private void addFlowBrowsingButton() {
+    wbBrowseFlows = new Button(wSettingComp,SWT.PUSH);
+    wbBrowseFlows.setText( BaseMessages.getString( PKG, "SdmxDialog.BrowseFlows.Button" ));
+    props.setLook(wbBrowseFlows);
+    fdBrowseFlows = new FormData();
+    fdBrowseFlows.left = new FormAttachment( wFlow , margin );
+    fdBrowseFlows.top = new FormAttachment( wProvider, margin );
+    wbBrowseFlows.setLayoutData( fdBrowseFlows );
+
+    wbBrowseFlows.addListener(SWT.Selection, new Listener() {
+      @Override
+      public void handleEvent(Event e) {
+        if (sdmxDialogData.getChosenProvider() !=null ){
+          Provider p = sdmxDialogData.getChosenProvider();
+          try {
+            sdmxDialogData.setAvailableFlows(SdmxClientHandler.getFlows(p.getName(),null));
+          } catch (SdmxException e1) {
+            e1.printStackTrace();
+          }
+          Map <String,String> flows = sdmxDialogData.getAvailableFlows();
+          String[] flowDesc = new String[flows.values().size()];
+          int i = 0;
+          for ( String k : flows.keySet() ){
+            flowDesc[i++] = k + " - " + flows.get(k);
+          }
+          EnterSelectionDialog esd = new EnterSelectionDialog( shell, flowDesc,
+              BaseMessages.getString( PKG, "FlowDialog.SelectInfoType.DialogTitle"),
+              BaseMessages.getString( PKG, "FlowDialog.SelectInfoType.DialogMessage") );
+          String string = esd.open();
+          if ( string != null ) {
+            sdmxDialogData.setChosenFlowFrom(string);
+            wFlow.setText(string);
+          }
+          meta.setChanged();
+        }
+      }
+    });
+
+  }
+
+  private void addDimensionTableView() {
+    int FieldsCols = 2;
+
+    ColumnInfo[] colinfo = new ColumnInfo[FieldsCols];
+    colinfo[0] = new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.Dimension.Column"), ColumnInfo.COLUMN_TYPE_TEXT, false );
+    colinfo[1] = new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.DimensionCode.Column"), ColumnInfo.COLUMN_TYPE_TEXT, false );
+
+    colinfo[0].setToolTip( BaseMessages.getString( PKG, "SdmxDialog.Dimension.Column.Tooltip" ) );
+    colinfo[0].setSelectionAdapter(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent e) {
+        wCodeList.removeAll();
+
+        String provider = sdmxDialogData.getChosenProvider().getName();
+        String flow = sdmxDialogData.getFlowId();
+        String dim =  wDimensionList.getItem(e.y)[0] ;
+        try {
+          Map<String, String> codes = SdmxClientHandler.getCodes( provider, flow, dim );
+          for ( String k : codes.keySet() ){
+            wCodeList.add( k , codes.get( k ) );
+          }
+          wCodeList.removeEmptyRows();
+          wCodeList.setRowNums();
+        } catch (SdmxException e1) {
+          e1.printStackTrace();
+        }
+      }
+    });
+
+    wDimensionList = new TableView( transMeta, wSettingComp, SWT.FULL_SELECTION | SWT.SINGLE | SWT.BORDER, colinfo, 1, lsMod, props );
+    props.setLook( wDimensionList );
+    fdDimensionList = new FormData();
+    fdDimensionList.top = new FormAttachment( wbBrowseFlows, margin );
+    fdDimensionList.left = new FormAttachment( 5 , 0 );
+    fdDimensionList.right = new FormAttachment( middle , 0 );
+    fdDimensionList.bottom = new FormAttachment( 70, 0 );
+    wDimensionList.setLayoutData( fdDimensionList );
+  }
+
+  private void addDimensionButton() {
+    wbDimensions = new Button(wSettingComp, SWT.PUSH);
+    wbDimensions.setText( BaseMessages.getString( PKG, "SdmxDialog.GetDimensions.Button" ));
+    props.setLook(wbDimensions);
+    fdDimensions = new FormData();
+    fdDimensions.left = new FormAttachment( wbBrowseFlows, 0, SWT.LEFT );
+    fdDimensions.top = new FormAttachment( wbBrowseFlows, margin );
+    wbDimensions.setLayoutData( fdDimensions );
+
+    wbDimensions.addListener(SWT.Selection, new Listener() {
+      @Override
+      public void handleEvent(Event e) {
+        List<Dimension> dims = null;
+        try {
+          dims = SdmxClientHandler.getDimensions(sdmxDialogData.getChosenProvider().getName(), sdmxDialogData.getChosenFlow().getId());
+          sdmxDialogData.setCurrentFlowDimensions( dims );
+          wDimensionList.removeAll();
+          for (Dimension d : dims ){
+            wDimensionList.add( d.getId(), "" );
+          }
+          wDimensionList.removeEmptyRows();
+          wDimensionList.setRowNums();
+          wDimensionList.optWidth( true );
+        } catch (SdmxException e1) {
+          e1.printStackTrace();
+        }
+      }
+    });
+
+  }
+
+  private void addCodeListTableView() {
+    int FieldsCols = 2;
+    ColumnInfo[] colinfo = new ColumnInfo[FieldsCols];
+    colinfo[0] = new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.CodeListId.Column"), ColumnInfo.COLUMN_TYPE_TEXT, false );
+    colinfo[1] = new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.CodeListDescription.Column"), ColumnInfo.COLUMN_TYPE_TEXT, false );
+
+    wCodeList = new TableView( transMeta, wSettingComp, SWT.FULL_SELECTION | SWT.MULTI | SWT.BORDER, colinfo, 1, lsMod, props );
+    props.setLook( wCodeList );
+    fdCodeList = new FormData();
+    fdCodeList.top = new FormAttachment( wbBrowseFlows, margin );
+    fdCodeList.left = new FormAttachment( wbDimensions , margin );
+    fdCodeList.right = new FormAttachment( 100 , -margin );
+    fdCodeList.bottom = new FormAttachment( 70, 0 );
+    wCodeList.setLayoutData( fdCodeList );
+  }
 }
