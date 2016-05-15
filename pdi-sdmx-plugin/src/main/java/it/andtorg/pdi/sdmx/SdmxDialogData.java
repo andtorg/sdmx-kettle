@@ -1,21 +1,29 @@
 package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
+import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
+import org.pentaho.di.i18n.BaseMessages;
 
+import java.util.List;
 import java.util.Map;
 
 /**
- * A class to store temporary data and behaviour
+ * A class to store temporary data and behaviour when navigating Sdmx providers
  * </p>
  * It helps avoiding logic pollution in {@link SdmxStepDialog}
  *
  * @author Andrea Torre
  */
-public class StepDialogController {
+public class SdmxDialogData {
+  private static Class<?> PKG = SdmxDialogData.class; // for i18n purposes
+
   private Provider chosenProvider;
   private Map<String, String> availableFlows;
   private Dataflow chosenFlow;
+  private List<Dimension> currentFlowDimensions;
+  private Dimension activeDimension;
+  private String sdmxQuery;
 
   public Provider getChosenProvider() {
     return chosenProvider;
@@ -54,5 +62,27 @@ public class StepDialogController {
 
   public String getFlowDescription() {
     return chosenFlow.getDescription();
+  }
+
+  public List<Dimension> getCurrentFlowDimensions() {
+    return currentFlowDimensions;
+  }
+
+  public void setCurrentFlowDimensions(List<Dimension> currentFlowDimensions) {
+    this.currentFlowDimensions = currentFlowDimensions;
+  }
+
+  public Dimension findDimensionByName( String name ) {
+    if ( currentFlowDimensions == null ) {
+      throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionsInFlowEx.Message" ) );
+    }
+    Dimension dim;
+
+    for ( Dimension d : currentFlowDimensions ){
+      if ( d.getName().equals( name ) ) {
+        return d;
+      }
+    }
+    throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionEx.Message" ) + " with name: " + name  );
   }
 }
