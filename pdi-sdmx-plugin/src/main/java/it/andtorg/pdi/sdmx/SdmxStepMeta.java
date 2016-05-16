@@ -206,7 +206,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * 
 	 * @return a string containing the XML serialization of this step
 	 */
-	public String xgetXML() throws KettleValueException {
+	public String getXML() throws KettleValueException {
 		StringBuilder retval = new StringBuilder( 1000 );
 
     retval.append( "    " ).append( XMLHandler.addTagValue( "provider_id", provider == null ? "" : provider.getName() ) );
