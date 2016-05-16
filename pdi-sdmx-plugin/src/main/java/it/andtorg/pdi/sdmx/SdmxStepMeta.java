@@ -25,10 +25,12 @@ package it.andtorg.pdi.sdmx;
 import java.util.List;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
+import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.eclipse.swt.widgets.Shell;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.annotations.Step;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -97,6 +99,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 
   private Provider provider;
 	private Dataflow dataflow;
+	private List<Dimension> dimensions;
 
 
   /**
@@ -183,7 +186,15 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     this.dataflow = dataflow;
   }
 
-  /**
+	public List<Dimension> getDimensions() {
+		return dimensions;
+	}
+
+	public void setDimensions(List<Dimension> dimensions) {
+		this.dimensions = dimensions;
+	}
+
+	/**
 	 * This method is used when a step is duplicated in Spoon. It needs to return a deep copy of this
 	 * step meta object. Be sure to create proper deep copies if the step configuration is stored in
 	 * modifiable objects.
@@ -214,6 +225,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     retval.append( "    " ).append( XMLHandler.addTagValue( "flow_id", dataflow == null ? "" : dataflow.getId() ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "flow_desc", dataflow == null ? "" : dataflow.getDescription() ) );
 
+		appendDimensions( retval );
 
     //todo delete; it was the demo
     retval.append( "    " ).append( XMLHandler.addTagValue( "outputfield", outputField ) );
@@ -353,5 +365,19 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     	
 	}
 
+	private void appendDimensions( StringBuilder sb ) {
+		if ( dimensions != null && dimensions.size() > 0 ) {
+			sb.append( "    <dimensions>" ).append( Const.CR );
+
+			for ( Dimension d : dimensions ) {
+				sb.append( "        <dimension>" ).append( Const.CR );
+				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_id", d.getId() ) );
+				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_position", d.getPosition() ) );
+				sb.append( "        </dimension>" ).append( Const.CR );
+			}
+			sb.append( "    </dimensions>" ).append( Const.CR );
+
+		}
+	}
 
 }

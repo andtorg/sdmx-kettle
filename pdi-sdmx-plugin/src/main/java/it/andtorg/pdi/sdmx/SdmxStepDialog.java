@@ -279,7 +279,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
 		// populate the dialog with the values from the meta object
     // TODO: 13/05/16 it does the same things as getData(). Delete one of them
-		populateDialog();
+//		populateDialog();
 		
 		// restore the changed flag to original value, as the modify listeners fire during dialog population 
 		meta.setChanged(changed);
@@ -434,7 +434,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
     stepMeta.setProvider( sdmxDialogData.getChosenProvider() );
     stepMeta.setDataflow( sdmxDialogData.getChosenFlow() );
-
+    stepMeta.setDimensions( sdmxDialogData.getCurrentFlowDimensions() );
   }
 
   private String concatenateArrayValues ( String[] arr ){
