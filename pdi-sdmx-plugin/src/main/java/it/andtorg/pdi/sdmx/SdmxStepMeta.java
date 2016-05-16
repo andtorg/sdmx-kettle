@@ -22,6 +22,7 @@
 
 package it.andtorg.pdi.sdmx;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
@@ -108,6 +109,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public SdmxStepMeta() {
 		super();
     setDataflow( new Dataflow() );
+		setDimensions( new ArrayList<>() );
 	}
 	
 	/**
@@ -253,6 +255,16 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       dataflow.setId( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_id" ) ) );
       dataflow.setName( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_desc" ) ) ); //todo open issue on sdmx codebase for API getter/setter not clear
 
+			Node dims = XMLHandler.getSubNode( stepnode, "dimensions" );
+			int nrDimensions = XMLHandler.countNodes( dims, "dimension" );
+
+			for ( int i = 0; i < nrDimensions; i++ ) {
+				Node dimNode = XMLHandler.getSubNodeByNr( dims, "dimension", i );
+				Dimension d = new Dimension();
+				d.setId( XMLHandler.getTagValue( dimNode, "dim_id" ) );
+				d.setPosition( Integer.parseInt( XMLHandler.getTagValue( dimNode, "dim_position" ) ) );
+				dimensions.add( d );
+			}
 		} catch (Exception e) {
 			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
 		}
