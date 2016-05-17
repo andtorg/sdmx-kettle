@@ -44,4 +44,26 @@ public class SdmxDialogDataTest {
 
     assertEquals( one, sdc.findDimensionByName( "dim_1" ) );
   }
+
+  @Test
+  public void shouldInitializeDimensionsWithDotCodes() {
+    Dimension one = new Dimension();
+    one.setName("dim_1");
+
+    Dimension two = new Dimension();
+    two.setName( "dim_2" );
+
+    List<Dimension> dims = new ArrayList<>();
+    dims.add( one );
+    dims.add( two );
+
+    sdc.initializeFlowDimensions( dims );
+
+    String expectedCode1 = ".";
+    assertEquals( expectedCode1, sdc.getSelectedCodesByDimension( one ) );
+
+    String expectedCode2 = ".";
+    assertEquals( expectedCode2, sdc.getSelectedCodesByDimension( two ) );
+
+  }
 }

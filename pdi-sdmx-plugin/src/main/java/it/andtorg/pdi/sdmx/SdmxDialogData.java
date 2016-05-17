@@ -5,6 +5,7 @@ import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.pentaho.di.i18n.BaseMessages;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,11 @@ public class SdmxDialogData {
   private List<Dimension> currentFlowDimensions;
   private Dimension activeDimension;
   private String sdmxQuery;
+  private Map<Dimension,String> dimSelectedCodes;
+
+  public SdmxDialogData() {
+    this.dimSelectedCodes = new HashMap<>();
+  }
 
   public Provider getChosenProvider() {
     return chosenProvider;
@@ -84,5 +90,25 @@ public class SdmxDialogData {
       }
     }
     throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionEx.Message" ) + " with name: " + name  );
+  }
+
+  public String getSelectedCodesByDimension( Dimension d ){
+    return dimSelectedCodes.get( d );
+  }
+
+  /**
+   * Refresh the Dimensions collection.
+   * </p>
+   * Additionally, for each dimension, the wildcard char for
+   * codes is set: "." (i.e. All)
+   *
+   * @param dims
+   */
+  public void initializeFlowDimensions(List<Dimension> dims) {
+    this.currentFlowDimensions = dims;
+    this.dimSelectedCodes.clear();
+    for ( Dimension d : dims ) {
+      this.dimSelectedCodes.put( d, "." );
+    }
   }
 }
