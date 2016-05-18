@@ -23,7 +23,7 @@ public class SdmxDialogData {
   private Map<String, String> availableFlows;
   private Dataflow chosenFlow;
   private List<Dimension> currentFlowDimensions;
-  private Dimension activeDimension;
+  private String activeDimension;
   private String sdmxQuery;
   private Map<Dimension,String> dimSelectedCodes;
 
@@ -92,7 +92,29 @@ public class SdmxDialogData {
     throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionEx.Message" ) + " with name: " + name  );
   }
 
-  public String getSelectedCodesByDimension( Dimension d ){
+  /**
+   * Get the dimension currently selected.
+   * </p>
+   * It is the string id of the dimension. It is useful to bind the codes
+   * searched through the relevant tableview widget.
+   * @return
+   */
+  public String getActiveDimension() {
+    return activeDimension;
+  }
+
+  /**
+   * Set the {@link Dimension} currently selected.
+   * </p>
+   * It is the string id of the dimension. It is useful to bind the codes
+   * searched through the relevant tableview widget.
+   * @param activeDimension
+   */
+  public void setActiveDimension( String activeDimension ) {
+    this.activeDimension = activeDimension;
+  }
+
+  public String getSelectedCodesByDimension(Dimension d ){
     return dimSelectedCodes.get( d );
   }
 

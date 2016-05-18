@@ -595,6 +595,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           }
           wCodeList.removeEmptyRows();
           wCodeList.setRowNums();
+          sdmxDialogData.setActiveDimension( dim ); //store for later codelist binding
         } catch (SdmxException e1) {
           e1.printStackTrace();
         }
