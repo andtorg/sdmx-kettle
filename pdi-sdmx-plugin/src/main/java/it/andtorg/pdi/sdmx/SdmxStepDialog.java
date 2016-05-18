@@ -427,6 +427,23 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       sdmxDialogData.setChosenFlow( df );
       wFlow.setText( df.getId() + " - " + df.getDescription() );
     }
+
+    if ( meta.getDimensions().size() > 0 ) {
+      List<Dimension> dims = meta.getDimensions();
+      sdmxDialogData.setCurrentFlowDimensions( dims );
+      dims.sort(new Comparator<Dimension>() {
+        @Override
+        public int compare(Dimension o1, Dimension o2) {
+          return o1.getPosition() - o2.getPosition();
+        }
+      });
+      for ( Dimension d : dims ) {
+        wDimensionList.add( d.getId() );
+      }
+      wDimensionList.removeEmptyRows();
+      wDimensionList.setRowNums();
+      wDimensionList.optWidth( true );
+    }
   }
 
   private void saveMeta( SdmxStepMeta stepMeta) {
@@ -609,10 +626,10 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         List<Dimension> dims = null;
         try {
           dims = SdmxClientHandler.getDimensions(sdmxDialogData.getChosenProvider().getName(), sdmxDialogData.getChosenFlow().getId());
-          sdmxDialogData.setCurrentFlowDimensions( dims );
+          sdmxDialogData.initializeFlowDimensions( dims );
           wDimensionList.removeAll();
           for (Dimension d : dims ){
-            wDimensionList.add( d.getId(), "" );
+            wDimensionList.add( d.getId(), sdmxDialogData.getSelectedCodesByDimension( d ) );
           }
           wDimensionList.removeEmptyRows();
           wDimensionList.setRowNums();
