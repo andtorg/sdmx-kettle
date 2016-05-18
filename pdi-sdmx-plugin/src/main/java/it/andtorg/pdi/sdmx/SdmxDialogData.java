@@ -23,7 +23,7 @@ public class SdmxDialogData {
   private Map<String, String> availableFlows;
   private Dataflow chosenFlow;
   private List<Dimension> currentFlowDimensions;
-  private String activeDimension;
+  private String activeDimensionId;
   private String sdmxQuery;
   private Map<Dimension,String> dimSelectedCodes;
 
@@ -99,8 +99,8 @@ public class SdmxDialogData {
    * searched through the relevant tableview widget.
    * @return
    */
-  public String getActiveDimension() {
-    return activeDimension;
+  public String getActiveDimensionId() {
+    return activeDimensionId;
   }
 
   /**
@@ -108,10 +108,10 @@ public class SdmxDialogData {
    * </p>
    * It is the string id of the dimension. It is useful to bind the codes
    * searched through the relevant tableview widget.
-   * @param activeDimension
+   * @param activeDimensionId
    */
-  public void setActiveDimension( String activeDimension ) {
-    this.activeDimension = activeDimension;
+  public void setActiveDimensionId(String activeDimensionId) {
+    this.activeDimensionId = activeDimensionId;
   }
 
   public String getSelectedCodesByDimension(Dimension d ){

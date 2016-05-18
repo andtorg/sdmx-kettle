@@ -588,6 +588,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         String provider = sdmxDialogData.getChosenProvider().getName();
         String flow = sdmxDialogData.getFlowId();
         String dim =  wDimensionList.getItem(e.y)[0] ;
+        sdmxDialogData.setActiveDimensionId( dim ); //store for later codelist binding
+
         try {
           Map<String, String> codes = SdmxClientHandler.getCodes( provider, flow, dim );
           for ( String k : codes.keySet() ){
@@ -595,7 +597,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           }
           wCodeList.removeEmptyRows();
           wCodeList.setRowNums();
-          sdmxDialogData.setActiveDimension( dim ); //store for later codelist binding
+
         } catch (SdmxException e1) {
           e1.printStackTrace();
         }
@@ -657,5 +659,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     fdCodeList.right = new FormAttachment( 100 , -margin );
     fdCodeList.bottom = new FormAttachment( 70, 0 );
     wCodeList.setLayoutData( fdCodeList );
+  }
+
+  private void redrawDimensionTable() {
+    
   }
 }
