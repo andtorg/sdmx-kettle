@@ -686,11 +686,20 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           }
           builder.append( wCodeList.getItem( ind[i] )[0] );
         }
-        System.out.println( builder );
+        sdmxDialogData.updateDimensionCodes( sdmxDialogData.getActiveDimensionId(), builder.toString() );
+        redrawDimensionTable();
       }
     });
   }
+
   private void redrawDimensionTable() {
-    
+    Map<Dimension,String> dimToCodes = sdmxDialogData.getCurrentFlowDimensionToCodes();
+    wDimensionList.removeAll();
+    for ( Dimension d : dimToCodes.keySet() ) {
+      wDimensionList.add( d.getId(), dimToCodes.get( d ) );
+    }
+    wDimensionList.removeEmptyRows();
+    wDimensionList.setRowNums();
+    wDimensionList.optWidth( true );
   }
 }
