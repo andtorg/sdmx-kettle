@@ -22,8 +22,7 @@
 
 package it.andtorg.pdi.sdmx;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
@@ -100,7 +99,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 
   private Provider provider;
 	private Dataflow dataflow;
-	private List<Dimension> dimensions;
+	private Map<Dimension, String> dimensionToCodes;
 
 
   /**
@@ -109,7 +108,13 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public SdmxStepMeta() {
 		super();
     setDataflow( new Dataflow() );
-		setDimensions( new ArrayList<>() );
+		Comparator<Dimension> comparator = new Comparator<Dimension>() {
+			@Override
+			public int compare(Dimension o1, Dimension o2) {
+				return o1.getPosition() - o2.getPosition();
+			}
+		};
+		this.dimensionToCodes = new TreeMap<>( comparator );
 	}
 	
 	/**
@@ -188,12 +193,16 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     this.dataflow = dataflow;
   }
 
-	public List<Dimension> getDimensions() {
-		return dimensions;
+	public void updateCodesByDimension( Dimension d, String codes ) {
+		this.dimensionToCodes.put( d, codes );
 	}
 
-	public void setDimensions(List<Dimension> dimensions) {
-		this.dimensions = dimensions;
+	public void wipeDimensions() {
+		this.dimensionToCodes.clear();
+	}
+
+	public Map<Dimension, String> getDimensionToCodes() {
+		return dimensionToCodes;
 	}
 
 	/**
@@ -263,7 +272,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				Dimension d = new Dimension();
 				d.setId( XMLHandler.getTagValue( dimNode, "dim_id" ) );
 				d.setPosition( Integer.parseInt( XMLHandler.getTagValue( dimNode, "dim_position" ) ) );
-				dimensions.add( d );
+				dimensionToCodes.put( d, "" );  // TODO: 19/05/16 change "" to code coming from xml file
 			}
 		} catch (Exception e) {
 			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
@@ -378,10 +387,10 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	}
 
 	private void appendDimensions( StringBuilder sb ) {
-		if ( dimensions != null && dimensions.size() > 0 ) {
+		if ( dimensionToCodes != null && dimensionToCodes.keySet().size() > 0 ) {
 			sb.append( "    <dimensions>" ).append( Const.CR );
 
-			for ( Dimension d : dimensions ) {
+			for ( Dimension d : dimensionToCodes.keySet() ) {
 				sb.append( "        <dimension>" ).append( Const.CR );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_id", d.getId() ) );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_position", d.getPosition() ) );

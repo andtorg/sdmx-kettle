@@ -117,6 +117,10 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private TableView wCodeList;
   private FormData fdCodeList;
 
+  private Button wbCodes;
+  private FormData fdCodes;
+
+
   private int middle, margin;
 
   /**
@@ -373,6 +377,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     addDimensionButton();
 
     addCodeListTableView();
+    addCodeButton();
 
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
@@ -422,28 +427,22 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       wProvider.setText( meta.getProvider().getName() + ": " + meta.getProvider().getDescription());
     }
 
-    if ( meta.getDataflow() != null ){
+    if ( meta.getDataflow() != null ) {
       Dataflow df = meta.getDataflow();
       sdmxDialogData.setChosenFlow( df );
       wFlow.setText( df.getId() + " - " + df.getDescription() );
     }
 
-    if ( meta.getDimensions().size() > 0 ) {
-      List<Dimension> dims = meta.getDimensions();
-      sdmxDialogData.setCurrentFlowDimensions( dims );
-      dims.sort(new Comparator<Dimension>() {
-        @Override
-        public int compare(Dimension o1, Dimension o2) {
-          return o1.getPosition() - o2.getPosition();
-        }
-      });
-      for ( Dimension d : dims ) {
-        wDimensionList.add( d.getId() );
+    Map<Dimension, String> dimToCodes = meta.getDimensionToCodes();
+    sdmxDialogData.loadDimensionToCodes( meta.getDimensionToCodes() );
+
+
+      for ( Dimension d : dimToCodes.keySet() ) {
+        wDimensionList.add( d.getId(), dimToCodes.get( d ) );
       }
       wDimensionList.removeEmptyRows();
       wDimensionList.setRowNums();
       wDimensionList.optWidth( true );
-    }
   }
 
   private void saveMeta( SdmxStepMeta stepMeta) {
@@ -451,7 +450,11 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
     stepMeta.setProvider( sdmxDialogData.getChosenProvider() );
     stepMeta.setDataflow( sdmxDialogData.getChosenFlow() );
-    stepMeta.setDimensions( sdmxDialogData.getCurrentFlowDimensions() );
+    stepMeta.wipeDimensions();
+    Map<Dimension, String> dimToSave = sdmxDialogData.getCurrentFlowDimensionToCodes();
+    for ( Dimension d : dimToSave.keySet() ) {
+      stepMeta.updateCodesByDimension( d, dimToSave.get( d ) );
+    }
   }
 
   private String concatenateArrayValues ( String[] arr ){
@@ -619,8 +622,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wbDimensions.setText( BaseMessages.getString( PKG, "SdmxDialog.GetDimensions.Button" ));
     props.setLook(wbDimensions);
     fdDimensions = new FormData();
-    fdDimensions.left = new FormAttachment( wbBrowseFlows, 0, SWT.LEFT );
-    fdDimensions.top = new FormAttachment( wbBrowseFlows, margin );
+    fdDimensions.left = new FormAttachment( wbBrowseFlows, margin );
+    fdDimensions.top = new FormAttachment( wProvider, margin );
     wbDimensions.setLayoutData( fdDimensions );
 
     wbDimensions.addListener(SWT.Selection, new Listener() {
@@ -655,12 +658,38 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     props.setLook( wCodeList );
     fdCodeList = new FormData();
     fdCodeList.top = new FormAttachment( wbBrowseFlows, margin );
-    fdCodeList.left = new FormAttachment( wbDimensions , margin );
-    fdCodeList.right = new FormAttachment( 100 , -margin );
+    fdCodeList.left = new FormAttachment( wDimensionList , margin*2 );
+    fdCodeList.right = new FormAttachment( 90 , -margin );
     fdCodeList.bottom = new FormAttachment( 70, 0 );
     wCodeList.setLayoutData( fdCodeList );
   }
 
+  private void addCodeButton() {
+    wbCodes = new Button(wSettingComp, SWT.PUSH);
+    wbCodes.setText( BaseMessages.getString( PKG, "SdmxDialog.AddCodes.Button"));
+    props.setLook(wbCodes);
+    fdCodes = new FormData();
+    fdCodes.left = new FormAttachment( wCodeList, margin );
+    fdCodes.top = new FormAttachment( wbDimensions, margin );
+    wbCodes.setLayoutData( fdCodes );
+
+    wbCodes.addListener(SWT.Selection, new Listener() {
+      @Override
+      public void handleEvent(Event e) {
+        StringBuilder builder = new StringBuilder();
+
+        int ind[] = wCodeList.getSelectionIndices();
+
+        for ( int i=0; i <ind.length; i++ ){
+          if (builder.length() > 0) {
+            builder.append("+");
+          }
+          builder.append( wCodeList.getItem( ind[i] )[0] );
+        }
+        System.out.println( builder );
+      }
+    });
+  }
   private void redrawDimensionTable() {
     
   }

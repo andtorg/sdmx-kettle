@@ -5,9 +5,7 @@ import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.pentaho.di.i18n.BaseMessages;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A class to store temporary data and behaviour when navigating Sdmx providers
@@ -22,13 +20,18 @@ public class SdmxDialogData {
   private Provider chosenProvider;
   private Map<String, String> availableFlows;
   private Dataflow chosenFlow;
-  private List<Dimension> currentFlowDimensions;
+  private Map<Dimension,String> currentFlowDimensionToCodes;
   private String activeDimensionId;
   private String sdmxQuery;
-  private Map<Dimension,String> dimSelectedCodes;
 
   public SdmxDialogData() {
-    this.dimSelectedCodes = new HashMap<>();
+    Comparator<Dimension> comparator = new Comparator<Dimension>() {
+      @Override
+      public int compare(Dimension o1, Dimension o2) {
+        return o1.getPosition() - o2.getPosition();
+      }
+    };
+    this.currentFlowDimensionToCodes = new TreeMap<>(comparator);
   }
 
   public Provider getChosenProvider() {
@@ -70,26 +73,26 @@ public class SdmxDialogData {
     return chosenFlow.getDescription();
   }
 
-  public List<Dimension> getCurrentFlowDimensions() {
-    return currentFlowDimensions;
+  public Map<Dimension,String> getCurrentFlowDimensionToCodes() {
+    return currentFlowDimensionToCodes;
   }
 
-  public void setCurrentFlowDimensions(List<Dimension> currentFlowDimensions) {
-    this.currentFlowDimensions = currentFlowDimensions;
+  public void setCurrentFlowDimensions(List<Dimension> dimensions) {
+//    this.currentFlowDimensionToCodes = currentFlowDimensionToCodes;
   }
 
-  public Dimension findDimensionByName( String name ) {
-    if ( currentFlowDimensions == null ) {
+  public Dimension findDimensionById(String id ) {
+    if ( currentFlowDimensionToCodes == null ) {
       throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionsInFlowEx.Message" ) );
     }
     Dimension dim;
 
-    for ( Dimension d : currentFlowDimensions ){
-      if ( d.getName().equals( name ) ) {
+    for ( Dimension d : currentFlowDimensionToCodes.keySet()){
+      if ( d.getId().equals( id ) ) {
         return d;
       }
     }
-    throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionEx.Message" ) + " with name: " + name  );
+    throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionEx.Message" ) + " with id: " + id  );
   }
 
   /**
@@ -114,8 +117,9 @@ public class SdmxDialogData {
     this.activeDimensionId = activeDimensionId;
   }
 
+  @Deprecated
   public String getSelectedCodesByDimension(Dimension d ){
-    return dimSelectedCodes.get( d );
+    return currentFlowDimensionToCodes.get( d );
   }
 
   /**
@@ -127,10 +131,35 @@ public class SdmxDialogData {
    * @param dims
    */
   public void initializeFlowDimensions(List<Dimension> dims) {
-    this.currentFlowDimensions = dims;
-    this.dimSelectedCodes.clear();
+    currentFlowDimensionToCodes.clear();
     for ( Dimension d : dims ) {
-      this.dimSelectedCodes.put( d, "." );
+      currentFlowDimensionToCodes.put( d, ".");
     }
+  }
+
+  public void updateDimensionCodes( String dimensionId, String codes ) {
+    for ( Dimension d : currentFlowDimensionToCodes.keySet() ) {
+      if ( d.getId().equals( dimensionId ) ) {
+        currentFlowDimensionToCodes.put( d, codes );
+        break;
+      }
+    }
+  }
+
+  public String findCodesByDimensionId( String id ) {
+    for ( Dimension d : currentFlowDimensionToCodes.keySet() ){
+      if ( d.getId().equals( id ) ) return currentFlowDimensionToCodes.get( d );
+    }
+    throw new IllegalArgumentException(BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionEx.Message" ) + " with id: " + id );
+  }
+
+  /**
+   * It clears all existing dimensions before passing the parameter.
+   * </p>
+   * @param dimToCodes
+   */
+  public void loadDimensionToCodes( Map<Dimension, String> dimToCodes ) {
+    currentFlowDimensionToCodes.clear();
+    currentFlowDimensionToCodes.putAll( dimToCodes );
   }
 }
