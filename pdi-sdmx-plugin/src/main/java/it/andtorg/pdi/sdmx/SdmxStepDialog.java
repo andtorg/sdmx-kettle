@@ -430,7 +430,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     if ( meta.getDataflow() != null ) {
       Dataflow df = meta.getDataflow();
       sdmxDialogData.setChosenFlow( df );
-      wFlow.setText( df.getId() + " - " + df.getDescription() );
+      if ( df.getId() != null ) wFlow.setText( df.getId() + " - " + df.getDescription() );
     }
 
     Map<Dimension, String> dimToCodes = meta.getDimensionToCodes();
