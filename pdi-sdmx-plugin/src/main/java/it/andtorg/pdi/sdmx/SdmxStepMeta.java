@@ -272,7 +272,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				Dimension d = new Dimension();
 				d.setId( XMLHandler.getTagValue( dimNode, "dim_id" ) );
 				d.setPosition( Integer.parseInt( XMLHandler.getTagValue( dimNode, "dim_position" ) ) );
-				dimensionToCodes.put( d, "" );  // TODO: 19/05/16 change "" to code coming from xml file
+        String code = XMLHandler.getTagValue( dimNode, "dim_code" );
+				dimensionToCodes.put( d, code );
 			}
 		} catch (Exception e) {
 			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
@@ -394,6 +395,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				sb.append( "        <dimension>" ).append( Const.CR );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_id", d.getId() ) );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_position", d.getPosition() ) );
+				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_code", dimensionToCodes.get( d ) ) );
 				sb.append( "        </dimension>" ).append( Const.CR );
 			}
 			sb.append( "    </dimensions>" ).append( Const.CR );
