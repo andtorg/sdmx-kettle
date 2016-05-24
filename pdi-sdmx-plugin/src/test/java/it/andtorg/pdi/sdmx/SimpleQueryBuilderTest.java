@@ -11,8 +11,8 @@ import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 
-public class QueryBuilderTest {
-  private QueryBuilder qb;
+public class SimpleQueryBuilderTest {
+  private SimpleQueryBuilder qb;
   private Dataflow df;
   private Dimension dim_1, dim_2, dim_3, dim_4;
   private Map<Dimension, String> dimToCodes;
@@ -20,7 +20,7 @@ public class QueryBuilderTest {
   @SuppressWarnings("Convert2Lambda")
   @Before
   public void setUp() throws Exception {
-    qb = new QueryBuilder();
+    qb = new SimpleQueryBuilder();
     df = new Dataflow();
     df.setId( "BKN_PUB" );
 
