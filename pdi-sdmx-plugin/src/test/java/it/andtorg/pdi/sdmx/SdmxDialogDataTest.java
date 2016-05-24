@@ -44,17 +44,18 @@ public class SdmxDialogDataTest {
 
   @Test
   public void shouldReturnDimensionGivenItsId() throws Exception {
-      assertEquals( dim1, sdc.findDimensionById( "dim_1" ) );
+    sdc.initializeFlowDimensions( dims );
+    assertEquals( dim1, sdc.findDimensionById( "dim_1" ) );
   }
 
   @Test
-  public void shouldInitializeDimensionsWithDotCodes() {
+  public void shouldInitializeDimensions() {
     sdc.initializeFlowDimensions( dims );
 
-    String expectedCode1 = ".";
+    String expectedCode1 = "";
     assertEquals( expectedCode1, sdc.getSelectedCodesByDimension( dim1 ) );
 
-    String expectedCode2 = ".";
+    String expectedCode2 = "";
     assertEquals( expectedCode2, sdc.getSelectedCodesByDimension( dim2 ) );
   }
 

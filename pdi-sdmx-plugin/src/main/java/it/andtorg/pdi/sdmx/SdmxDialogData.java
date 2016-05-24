@@ -81,13 +81,12 @@ public class SdmxDialogData {
 //    this.currentFlowDimensionToCodes = currentFlowDimensionToCodes;
   }
 
-  public Dimension findDimensionById(String id ) {
+  public Dimension findDimensionById( String id ) {
     if ( currentFlowDimensionToCodes == null ) {
       throw new IllegalStateException( BaseMessages.getString( PKG, "SdmxDialogData.NoDimensionsInFlowEx.Message" ) );
     }
-    Dimension dim;
 
-    for ( Dimension d : currentFlowDimensionToCodes.keySet()){
+    for ( Dimension d : currentFlowDimensionToCodes.keySet() ){
       if ( d.getId().equals( id ) ) {
         return d;
       }
@@ -125,15 +124,13 @@ public class SdmxDialogData {
   /**
    * Refresh the Dimensions collection.
    * </p>
-   * Additionally, for each dimension, the wildcard char for
-   * codes is set: "." (i.e. All)
    *
    * @param dims
    */
   public void initializeFlowDimensions(List<Dimension> dims) {
     currentFlowDimensionToCodes.clear();
     for ( Dimension d : dims ) {
-      currentFlowDimensionToCodes.put( d, ".");
+      currentFlowDimensionToCodes.put( d, "" );
     }
   }
 
