@@ -120,6 +120,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private Button wbCodes;
   private FormData fdCodes;
 
+  private Button wbTimeSeries;
+  private FormData fdTimeSeries;
+
 
   private int middle, margin;
 
@@ -378,6 +381,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
     addCodeListTableView();
     addCodeButton();
+
+    addTimeSeriesButton();
 
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
@@ -688,6 +693,23 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         }
         sdmxDialogData.updateDimensionCodes( sdmxDialogData.getActiveDimensionId(), builder.toString() );
         redrawDimensionTable();
+      }
+    });
+  }
+
+  private void addTimeSeriesButton() {
+    wbTimeSeries = new Button(wSettingComp, SWT.PUSH);
+    wbTimeSeries.setText( BaseMessages.getString( PKG, "SdmxDialog.ViewTimeSeries.Button"));
+    props.setLook( wbTimeSeries );
+    fdTimeSeries = new FormData();
+    fdTimeSeries.left = new FormAttachment( wCodeList, margin );
+    fdTimeSeries.top = new FormAttachment( wbCodes, margin );
+    wbTimeSeries.setLayoutData( fdTimeSeries );
+
+    wbTimeSeries.addListener(SWT.Selection, new Listener() {
+      @Override
+      public void handleEvent(Event e) {
+
       }
     });
   }
