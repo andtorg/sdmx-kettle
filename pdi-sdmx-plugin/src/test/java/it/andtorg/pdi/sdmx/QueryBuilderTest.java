@@ -17,6 +17,7 @@ public class QueryBuilderTest {
   private Dimension dim_1, dim_2, dim_3, dim_4;
   private Map<Dimension, String> dimToCodes;
 
+  @SuppressWarnings("Convert2Lambda")
   @Before
   public void setUp() throws Exception {
     qb = new QueryBuilder();
