@@ -46,6 +46,8 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMetaInterface;
+import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
@@ -712,7 +714,14 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       @Override
       public void handleEvent(Event e) {
         RowMetaInterface rowMeta = new RowMeta();
-        PreviewTimeSeriesDialog tsd = new PreviewTimeSeriesDialog( shell, SWT.NONE, rowMeta );
+        ValueMetaInterface seriesName = new ValueMetaString( "Series" );
+        rowMeta.addValueMeta( seriesName );
+
+        for ( Dimension d : sdmxDialogData.getCurrentFlowDimensionToCodes().keySet() ){
+          ValueMetaInterface field = new ValueMetaString( d.getId() );
+          rowMeta.addValueMeta( field );
+        }
+        PreviewTimeSeriesDialog tsd = new PreviewTimeSeriesDialog( shell, SWT.NONE, rowMeta, transMeta );
         tsd.open();
       }
     });
