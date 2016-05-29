@@ -24,7 +24,6 @@ package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
-import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
@@ -77,7 +76,7 @@ import java.util.List;
  * - report whether the user changed any settings when confirming the dialog 
  * 
  */
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings({"FieldCanBeLocal", "Convert2Lambda"})
 public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterface {
 
 	/**
@@ -390,7 +389,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     addCodeListTableView();
     addCodeButton();
 
-    addTimeSeriesButton();
+    addViewTimeSeriesButton();
 
     wSettingComp.pack();
     Rectangle bounds = wSettingComp.getBounds();
@@ -430,10 +429,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     }
   }
 
-  private void setFlows(){
-    System.out.println("flowing in the wind");
-  }
-
   private void getData ( SdmxStepMeta meta ){
     if ( meta.getProvider() != null ) {
       sdmxDialogData.setChosenProvider( meta.getProvider() );
@@ -468,17 +463,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     for ( Dimension d : dimToSave.keySet() ) {
       stepMeta.updateCodesByDimension( d, dimToSave.get( d ) );
     }
-  }
-
-  private String concatenateArrayValues ( String[] arr ){
-    StringBuilder builder = new StringBuilder();
-    for (String s : arr) {
-      if (builder.length() > 0) {
-        builder.append("+");
-      }
-      builder.append(s);
-    }
-    return builder.toString();
   }
 
   private void addProviderLabel(){
@@ -693,18 +677,18 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
         int ind[] = wCodeList.getSelectionIndices();
 
-        for ( int i=0; i <ind.length; i++ ){
+        for (int anInd : ind) {
           if (builder.length() > 0) {
             builder.append("+");
           }
-          builder.append( wCodeList.getItem( ind[i] )[0] );
+          builder.append(wCodeList.getItem(anInd)[0]);
         }
         updateDimensionTable( sdmxDialogData.getActiveDimensionId(), builder.toString() );
       }
     });
   }
 
-  private void addTimeSeriesButton() {
+  private void addViewTimeSeriesButton() {
     wbTimeSeries = new Button(wSettingComp, SWT.PUSH);
     wbTimeSeries.setText( BaseMessages.getString( PKG, "SdmxDialog.ViewTimeSeries.Button"));
     props.setLook( wbTimeSeries );
@@ -719,6 +703,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         RowMetaInterface rowMeta = new RowMeta();
         ValueMetaInterface seriesName = new ValueMetaString( "Series" );
         rowMeta.addValueMeta( seriesName );
+
+         // update dimension and codes in data object for following timeseries retrieving
+        updateDataWithTableViewContent();
 
         for ( Dimension d : sdmxDialogData.getCurrentFlowDimensionToCodes().keySet() ){
           ValueMetaInterface field = new ValueMetaString( d.getId() );
