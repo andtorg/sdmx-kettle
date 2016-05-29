@@ -456,7 +456,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       wDimensionList.optWidth( true );
   }
 
-  private void saveMeta( SdmxStepMeta stepMeta) {
+  private void saveMeta( SdmxStepMeta stepMeta ) {
     stepname = wStepname.getText(); // return value
 
     stepMeta.setProvider( sdmxDialogData.getChosenProvider() );
@@ -698,7 +698,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           builder.append( wCodeList.getItem( ind[i] )[0] );
         }
         sdmxDialogData.updateDimensionCodes( sdmxDialogData.getActiveDimensionId(), builder.toString() );
-        redrawDimensionTable();
+        updateDimensionTable( sdmxDialogData.getActiveDimensionId(), builder.toString() );
       }
     });
   }
@@ -738,14 +738,17 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     });
   }
 
-  private void redrawDimensionTable() {
-    Map<Dimension,String> dimToCodes = sdmxDialogData.getCurrentFlowDimensionToCodes();
-    wDimensionList.removeAll();
-    for ( Dimension d : dimToCodes.keySet() ) {
-      wDimensionList.add( d.getId(), dimToCodes.get( d ) );
-    }
-    wDimensionList.removeEmptyRows();
-    wDimensionList.setRowNums();
+  private void updateDimensionTable( String dimension, String code ) {
+    String[] dims = wDimensionList.getItems( 0 );
+    int dimRow = findDimensionRow( dimension, dims );
+    wDimensionList.setText( code, 2, dimRow );
     wDimensionList.optWidth( true );
+  }
+
+  private int findDimensionRow(String d, String[] dimensions ){
+    for ( int i=0; i < dimensions.length; i++ ){
+      if (d.equals( dimensions[i] )) return i;
+    }
+    throw new IllegalStateException();
   }
 }
