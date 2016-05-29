@@ -24,6 +24,7 @@ package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
+import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
@@ -721,8 +722,13 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           ValueMetaInterface field = new ValueMetaString( d.getId() );
           rowMeta.addValueMeta( field );
         }
-        PreviewTimeSeriesDialog tsd = new PreviewTimeSeriesDialog( shell, SWT.NONE, rowMeta, transMeta );
-        tsd.open();
+        try {
+          List<List<String>> ts = sdmxDialogData.getAvailableTimeSeriesNames();
+          PreviewTimeSeriesDialog tsd = new PreviewTimeSeriesDialog( shell, SWT.NONE, rowMeta, transMeta, ts );
+          tsd.open();
+        } catch (SdmxException e1) {
+          e1.printStackTrace();
+        }
       }
     });
   }

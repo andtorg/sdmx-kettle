@@ -2,7 +2,10 @@ package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
+import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
 import it.bancaditalia.oss.sdmx.client.Provider;
+import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
+import it.bancaditalia.oss.sdmx.util.SdmxException;
 import org.pentaho.di.i18n.BaseMessages;
 
 import java.util.*;
@@ -158,5 +161,31 @@ public class SdmxDialogData {
   public void loadDimensionToCodes( Map<Dimension, String> dimToCodes ) {
     currentFlowDimensionToCodes.clear();
     currentFlowDimensionToCodes.putAll( dimToCodes );
+  }
+
+  public String getSdmxQuery(){
+    if ( chosenProvider == null ) throw new IllegalStateException("Provider must be chosen");
+    QueryBuilder qb = SdmxProviderHandler.INSTANCE.getQueryBuilder( chosenProvider );
+    return qb.getSdmxQuery( chosenFlow.getId(), currentFlowDimensionToCodes );
+  }
+
+  public List<List<String>> getAvailableTimeSeriesNames() throws SdmxException {
+    List<List<String>> result = new ArrayList<>();
+
+    String query = getSdmxQuery();
+
+    List<PortableTimeSeries> series = SdmxClientHandler.getTimeSeriesNames( chosenProvider.getName(), query );
+    String token = "=";
+
+    for ( PortableTimeSeries ts : series ) {
+      List<String> row = new ArrayList<>();
+      row.add( ts.getName() );
+      for ( String dim : ts.getDimensions() ) {
+        String[] singleDim = dim.split(token);
+        row.add( singleDim[1] );
+      }
+      result.add( row );
+    }
+    return result;
   }
 }

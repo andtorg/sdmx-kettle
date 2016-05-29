@@ -6,6 +6,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TableItem;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
@@ -16,8 +17,10 @@ import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.TableView;
 
+import java.util.List;
+
 /**
- * Displays the available Sdmx timeseries in a {@link org.pentaho.di.ui.core.widget.TableView}
+ * Displays the available Sdmx timeseries in a {@link org.pentaho.di.ui.core.widget.TableView} dialog
  *
  * @author andrea torre
  */
@@ -30,31 +33,29 @@ public class PreviewTimeSeriesDialog {
   private VariableSpace variables;
 
   private String title, message;
-  private String stepName; //todo needed?
+  private List<List<String>> timeSeries;
 
   private RowMetaInterface rowMeta;
   private PropsUI props;
 
   private TableView wSeriesTable;
+
+  @SuppressWarnings("FieldCanBeLocal")
   private FormData fdSeriesTable;
 
   private int style = SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN;
 
-  public PreviewTimeSeriesDialog(Shell parent, int style, RowMetaInterface rowMeta, VariableSpace space ) {
+  public PreviewTimeSeriesDialog(Shell parent, int style, RowMetaInterface rowMeta, VariableSpace space,
+                                 List<List<String>> timeSeries ) {
     this.parentShell = parent;
     this.rowMeta = rowMeta;
+    this.timeSeries = timeSeries;
     this.style = ( style != SWT.None ) ? style : this.style;
     this.variables = space;
     props = PropsUI.getInstance();
 
     title = null;
     message = null;
-  }
-
-  public void setTitleMessage( String title, String message, String stepName ) {
-    this.title = title;
-    this.message = message;
-    this.stepName = stepName;
   }
 
   public void open() {
@@ -68,16 +69,11 @@ public class PreviewTimeSeriesDialog {
     formLayout.marginHeight = Const.FORM_MARGIN;
 
     if ( title == null ) {
-      title = BaseMessages.getString( PKG, "Sdmx.PreviewTimeSeriesDialog.Title" );
+      title = BaseMessages.getString( PKG, "Sdmx.PreviewTimeSeriesDialog.Title" ) + " " + timeSeries.size();
     }
     if ( message == null ) {
-      message = BaseMessages.getString( PKG, "Sdmx.PreviewTimeSeriesDialog.Header", stepName );
+      message = BaseMessages.getString( PKG, "Sdmx.PreviewTimeSeriesDialog.Header" );
     }
-
-    // we don't need a rowbuffer, but a timeseries buffer can help. // TODO: 24/05/16 find out how to implement
-//    if ( buffer != null ) {
-//      message += " " + BaseMessages.getString( PKG, "PreviewRowsDialog.NrRows", "" + buffer.size() );
-//    }
 
     shell.setLayout( formLayout );
     shell.setText( title );
@@ -111,6 +107,27 @@ public class PreviewTimeSeriesDialog {
     fdSeriesTable.right = new FormAttachment( 100, 0 );
     fdSeriesTable.bottom = new FormAttachment( 100, -50 );
     wSeriesTable.setLayoutData( fdSeriesTable );
+
+    fillTableView();
   }
 
+  // add a row in the table for each available series
+  private void fillTableView(){
+    for ( int i = 0; i < timeSeries.size(); i++ ) {
+      TableItem item;
+      if ( i == 0 ) {
+        item = wSeriesTable.table.getItem( i );
+      } else {
+        item = new TableItem( wSeriesTable.table, SWT.NONE );
+      }
+      List<String> ts = timeSeries.get( i );
+      for ( int c = 0; c < rowMeta.size(); c++ ) {
+
+        item.setText( c + 1 , ts.get( c ) );
+      }
+    }
+    wSeriesTable.removeEmptyRows();
+    wSeriesTable.setRowNums();
+    wSeriesTable.optWidth( true );
+  }
 }

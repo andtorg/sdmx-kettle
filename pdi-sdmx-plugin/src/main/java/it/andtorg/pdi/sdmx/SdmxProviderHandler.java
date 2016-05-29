@@ -31,5 +31,9 @@ public enum SdmxProviderHandler {
   public Provider getProviderByName(String name){
     return nameToProviders.get(name);
   }
+  
+  public QueryBuilder getQueryBuilder( Provider p ){
+    return new SimpleQueryBuilder(); //// TODO: 25/05/16 return a different implementation according to Provider 
+  }
 
 }
