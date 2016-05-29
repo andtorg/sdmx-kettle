@@ -100,11 +100,16 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	private Text wHelloFieldName;
   private CTabFolder wTabFolder;
   private FormData fdTabFolder;
+
   private CTabItem wSettingTab;
   private ScrolledComposite wSettingsSComp;
-
   private Composite wSettingComp;
   private FormData fdSettingComp;
+
+  private CTabItem wFieldsTab;
+  private ScrolledComposite wFieldsSComp;
+  private Composite wFieldsComp;
+  private FormData fdFieldsComp;
 
   private Label wlProvider;
   private FormData fdlProvider;
@@ -244,6 +249,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		wTabFolder.setSimple( false );
 
     addSettingTab();
+    addFieldTab();
 
 		fdTabFolder = new FormData();
 		fdTabFolder.left = new FormAttachment( 0, 0 );
@@ -408,6 +414,44 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wSettingComp.setLayoutData( fdSettingComp );
 
     wSettingTab.setControl( wSettingsSComp );
+  }
+
+  private void addFieldTab() {
+    // ////////////////////////
+    // START OF FIELD TAB ///
+    // ////////////////////////
+    wFieldsTab = new CTabItem( wTabFolder, SWT.NONE );
+    wFieldsTab.setText( BaseMessages.getString( PKG, "SdmxDialog.FieldTab.TabTitle" ) );
+
+    wFieldsSComp = new ScrolledComposite( wTabFolder, SWT.V_SCROLL | SWT.H_SCROLL );
+    wFieldsSComp.setLayout( new FillLayout() );
+
+    wFieldsComp = new Composite(wFieldsSComp, SWT.NONE );
+    props.setLook(wFieldsComp);
+
+    FormLayout settingLayout = new FormLayout();
+    settingLayout.marginWidth = 3;
+    settingLayout.marginHeight = 3;
+
+    wFieldsComp.setLayout( settingLayout );
+
+    // add code here
+
+    wFieldsComp.pack();
+    Rectangle bounds = wFieldsComp.getBounds();
+
+    wFieldsSComp.setContent( wSettingComp );
+    wFieldsSComp.setExpandHorizontal( true );
+    wFieldsSComp.setExpandVertical( true );
+    wFieldsSComp.setMinWidth( bounds.width );
+    wFieldsSComp.setMinHeight( bounds.height );
+
+    fdFieldsComp = new FormData();
+    fdFieldsComp.left = new FormAttachment( 0, 0 );
+    fdFieldsComp.top = new FormAttachment( 0, 0 );
+    fdFieldsComp.right = new FormAttachment( 100, 0 );
+    fdFieldsComp.bottom = new FormAttachment( 100, 0 );
+    wFieldsComp.setLayoutData(fdFieldsComp);
   }
 
   private void setProviders(){
