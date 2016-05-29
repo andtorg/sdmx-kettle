@@ -77,6 +77,7 @@ import java.util.List;
  * - report whether the user changed any settings when confirming the dialog 
  * 
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterface {
 
 	/**
@@ -350,6 +351,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		meta.setOutputField(wHelloFieldName.getText());
 		// close the SWT dialog window
 
+    updateDataWithTableViewContent();
     saveMeta( meta );
 
 		dispose();
@@ -697,7 +699,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           }
           builder.append( wCodeList.getItem( ind[i] )[0] );
         }
-        sdmxDialogData.updateDimensionCodes( sdmxDialogData.getActiveDimensionId(), builder.toString() );
         updateDimensionTable( sdmxDialogData.getActiveDimensionId(), builder.toString() );
       }
     });
@@ -738,6 +739,10 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     });
   }
 
+  /*
+   * Update the tableview row identified by parameter dimension
+   * with the parameter code
+   */
   private void updateDimensionTable( String dimension, String code ) {
     String[] dims = wDimensionList.getItems( 0 );
     int dimRow = findDimensionRow( dimension, dims );
@@ -745,10 +750,26 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wDimensionList.optWidth( true );
   }
 
+  /* It scans the tableview and returns the number
+   * of the row where the string d (dimension)
+   * appears
+   */
   private int findDimensionRow(String d, String[] dimensions ){
     for ( int i=0; i < dimensions.length; i++ ){
       if (d.equals( dimensions[i] )) return i;
     }
     throw new IllegalStateException();
+  }
+
+  /**
+   * Save the tableview content in the map object
+   * contained in SdmxDialogData instance
+   */
+  private void updateDataWithTableViewContent(){
+    int itemNumber = wDimensionList.getItemCount();
+    for ( int i=0; i < itemNumber; i++ ){
+      String[] item = wDimensionList.getItem( i );
+      sdmxDialogData.updateDimensionCodes( item[0], item[1] );
+    }
   }
 }
