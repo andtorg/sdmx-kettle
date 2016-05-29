@@ -52,6 +52,7 @@ import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.ui.core.dialog.EnterSelectionDialog;
+import org.pentaho.di.ui.core.dialog.ShowMessageDialog;
 import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
@@ -726,8 +727,12 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           List<List<String>> ts = sdmxDialogData.getAvailableTimeSeriesNames();
           PreviewTimeSeriesDialog tsd = new PreviewTimeSeriesDialog( shell, SWT.NONE, rowMeta, transMeta, ts );
           tsd.open();
-        } catch (SdmxException e1) {
-          e1.printStackTrace();
+        } catch (SdmxException ex) {
+          ShowMessageDialog dialog = new ShowMessageDialog( shell, SWT.OK | SWT.ICON_WARNING,
+              BaseMessages.getString( PKG, "SdmxDialog.NoSeries.Text" ),
+              BaseMessages.getString( PKG, "SdmxDialog.NoSeries.Message" ) );
+          dialog.open();
+          ex.printStackTrace();
         }
       }
     });
