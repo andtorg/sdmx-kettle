@@ -46,7 +46,9 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
+import org.pentaho.di.core.row.value.ValueMetaBase;
 import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
@@ -134,6 +136,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private Button wbTimeSeries;
   private FormData fdTimeSeries;
 
+  private TableView wFields;
+  private FormData fdFields;
 
   private int middle, margin;
 
@@ -249,7 +253,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		wTabFolder.setSimple( false );
 
     addSettingTab();
-    addFieldTab();
+    addFieldsTab();
 
 		fdTabFolder = new FormData();
 		fdTabFolder.left = new FormAttachment( 0, 0 );
@@ -265,6 +269,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel")); 
 
 		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, wTabFolder);
+
 
 //		 Add listeners for cancel and OK
 		lsCancel = new Listener() {
@@ -416,42 +421,67 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wSettingTab.setControl( wSettingsSComp );
   }
 
-  private void addFieldTab() {
+  private void addFieldsTab() {
     // ////////////////////////
     // START OF FIELD TAB ///
     // ////////////////////////
     wFieldsTab = new CTabItem( wTabFolder, SWT.NONE );
     wFieldsTab.setText( BaseMessages.getString( PKG, "SdmxDialog.FieldTab.TabTitle" ) );
 
-    wFieldsSComp = new ScrolledComposite( wTabFolder, SWT.V_SCROLL | SWT.H_SCROLL );
-    wFieldsSComp.setLayout( new FillLayout() );
+    FormLayout fieldsLayout = new FormLayout();
+    fieldsLayout.marginWidth = Const.FORM_MARGIN;
+    fieldsLayout.marginHeight = Const.FORM_MARGIN;
 
-    wFieldsComp = new Composite(wFieldsSComp, SWT.NONE );
+    wFieldsComp = new Composite(wTabFolder, SWT.NONE );
+    wFieldsComp.setLayout( fieldsLayout );
     props.setLook(wFieldsComp);
 
-    FormLayout settingLayout = new FormLayout();
-    settingLayout.marginWidth = 3;
-    settingLayout.marginHeight = 3;
+    wGet = new Button( wFieldsComp, SWT.PUSH );
+    wGet.setText( BaseMessages.getString( PKG, "System.Button.GetFields" ) );
+    fdGet = new FormData();
+    fdGet.left = new FormAttachment( 50, 0 );
+    fdGet.bottom = new FormAttachment( 100, 0 );
+    wGet.setLayoutData( fdGet );
 
-    wFieldsComp.setLayout( settingLayout );
+//    final int FieldsRows = input.inputFiles.inputFields.length; //// TODO: 30/05/16 WAT? 
+
+
 
     // add code here
+    ColumnInfo[] colinf =
+        new ColumnInfo[] {
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.NameColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.TypeColumn.Column" ), ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMetaBase.getTypes(), true ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.FormatColumn.Column" ),ColumnInfo.COLUMN_TYPE_FORMAT, 2 ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.LengthColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.PrecisionColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.CurrencyColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.DecimalColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.GroupColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+//            new ColumnInfo( BaseMessages.getString( PKG, "SdmxtDialog.NullIfColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+//            new ColumnInfo( BaseMessages.getString( PKG, "SdmxInputDialog.IfNullColumn.Column" ), ColumnInfo.COLUMN_TYPE_TEXT, false ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.TrimTypeColumn.Column" ), ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMetaBase.trimTypeDesc, true ),
+            new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.RepeatColumn.Column" ), ColumnInfo.COLUMN_TYPE_CCOMBO,
+                new String[] { BaseMessages.getString( PKG, "System.Combo.Yes" ), BaseMessages.getString( PKG, "System.Combo.No" ) }, true ) };
 
-    wFieldsComp.pack();
-    Rectangle bounds = wFieldsComp.getBounds();
+    wFields = new TableView( transMeta, wFieldsComp, SWT.FULL_SELECTION | SWT.MULTI, colinf, 10, lsMod, props );
 
-    wFieldsSComp.setContent( wSettingComp );
-    wFieldsSComp.setExpandHorizontal( true );
-    wFieldsSComp.setExpandVertical( true );
-    wFieldsSComp.setMinWidth( bounds.width );
-    wFieldsSComp.setMinHeight( bounds.height );
+    fdFields = new FormData();
+    fdFields.left = new FormAttachment( 0, 0 );
+    fdFields.top = new FormAttachment( 0, 0 );
+    fdFields.right = new FormAttachment( 100, 0 );
+    fdFields.bottom = new FormAttachment( wGet, -margin );
+    wFields.setLayoutData( fdFields );
 
     fdFieldsComp = new FormData();
     fdFieldsComp.left = new FormAttachment( 0, 0 );
     fdFieldsComp.top = new FormAttachment( 0, 0 );
     fdFieldsComp.right = new FormAttachment( 100, 0 );
     fdFieldsComp.bottom = new FormAttachment( 100, 0 );
+
     wFieldsComp.setLayoutData(fdFieldsComp);
+    wFieldsComp.layout();
+    wFieldsTab.setControl( wFieldsComp );
   }
 
   private void setProviders(){
