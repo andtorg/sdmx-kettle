@@ -74,7 +74,7 @@ import org.w3c.dom.Node;
  * 
  */
 
-@Step(	
+@Step(
 		id = "SdmxStep",
 		image = "it/andtorg/pdi/sdmx/resources/demo.svg",
 		i18nPackageName="it.andtorg.pdi.sdk.samples.steps.demo", // TODO: 03/05/16
@@ -94,13 +94,15 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	/**
 	 * Stores the name of the field added to the row-stream. 
 	 */
-	private String outputField;
-  private SdmxProviderHandler providerHandler = SdmxProviderHandler.INSTANCE;
+	private String outputField; //// TODO: 30/05/16 maybe delete
+	private SdmxProviderHandler providerHandler = SdmxProviderHandler.INSTANCE;
+
+	/** The fields to import */
+	private SdmxInputField[] fields;
 
   private Provider provider;
 	private Dataflow dataflow;
 	private Map<Dimension, String> dimensionToCodes;
-
 
   /**
 	 * Constructor should call super() to make sure the base class has a chance to initialize properly.
@@ -387,7 +389,15 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     	
 	}
 
-	private void appendDimensions( StringBuilder sb ) {
+	public SdmxInputField[] getInputFields() {
+		return fields;
+	}
+
+	public void setInputFields(SdmxInputField[] fields) {
+		this.fields = fields;
+	}
+
+	private void appendDimensions(StringBuilder sb ) {
 		if ( dimensionToCodes != null && dimensionToCodes.keySet().size() > 0 ) {
 			sb.append( "    <dimensions>" ).append( Const.CR );
 
