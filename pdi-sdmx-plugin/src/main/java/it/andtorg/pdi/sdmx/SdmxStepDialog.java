@@ -371,7 +371,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		meta.setOutputField(wHelloFieldName.getText());
 		// close the SWT dialog window
 
-    updateDataWithTableViewContent();
     saveMeta( meta );
 
 		dispose();
@@ -803,9 +802,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         RowMetaInterface rowMeta = new RowMeta();
         ValueMetaInterface seriesName = new ValueMetaString( "Series" );
         rowMeta.addValueMeta( seriesName );
-
-         // update dimension and codes in data object for following timeseries retrieving
-        updateDataWithTableViewContent();
 
         for ( Dimension d : sdmxDialogData.getCurrentFlowDimensionToCodes().keySet() ){
           ValueMetaInterface field = new ValueMetaString( d.getId() );
