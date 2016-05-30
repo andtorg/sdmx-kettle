@@ -277,6 +277,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
         String code = XMLHandler.getTagValue( dimNode, "dim_code" );
 				dimensionToCodes.put( d, code );
 			}
+
+      allocateFields(0); //todo this must be invoked with the no. of field nodes retrieved from xml
 		} catch (Exception e) {
 			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
 		}
@@ -396,6 +398,15 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void setInputFields(SdmxInputField[] fields) {
 		this.fields = fields;
 	}
+
+  /**
+   * Set the size the array of dimension fields.
+   *
+   * @param nrFields
+   */
+  public void allocateFields( int nrFields ) {
+    this.fields = new SdmxInputField[ nrFields ];
+  }
 
 	private void appendDimensions(StringBuilder sb ) {
 		if ( dimensionToCodes != null && dimensionToCodes.keySet().size() > 0 ) {

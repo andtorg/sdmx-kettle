@@ -195,7 +195,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 				meta.setChanged();
 			}
 		};
-		
+
 		// ------------------------------------------------------- //
 		// SWT code for building the actual settings dialog        //
 		// ------------------------------------------------------- //
@@ -284,6 +284,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		wCancel.addListener(SWT.Selection, lsCancel);
 		wOK.addListener(SWT.Selection, lsOK);
 
+
 		// default listener (for hitting "enter")
 		lsDef = new SelectionAdapter() {
 			public void widgetDefaultSelected(SelectionEvent e) {ok();}
@@ -295,6 +296,15 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		shell.addShellListener(new ShellAdapter() {
 			public void shellClosed(ShellEvent e) {cancel();}
 		});
+
+
+    wGet.addSelectionListener(new SelectionAdapter() {
+      @Override
+      public void widgetSelected(SelectionEvent selectionEvent) {
+        getFields();
+      }
+    });
+
 
     wTabFolder.setSelection( 0 );
 		// Set/Restore the dialog size based on last position on screen
@@ -443,9 +453,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     fdGet.bottom = new FormAttachment( 100, 0 );
     wGet.setLayoutData( fdGet );
 
-//    final int FieldsRows = input.inputFiles.inputFields.length; //// TODO: 30/05/16 WAT? 
-
-
+    final int fieldsRows = meta.getInputFields().length;
 
     // add code here
     ColumnInfo[] colinf =
@@ -464,7 +472,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
             new ColumnInfo( BaseMessages.getString( PKG, "SdmxDialog.RepeatColumn.Column" ), ColumnInfo.COLUMN_TYPE_CCOMBO,
                 new String[] { BaseMessages.getString( PKG, "System.Combo.Yes" ), BaseMessages.getString( PKG, "System.Combo.No" ) }, true ) };
 
-    wFields = new TableView( transMeta, wFieldsComp, SWT.FULL_SELECTION | SWT.MULTI, colinf, 10, lsMod, props );
+    wFields = new TableView( transMeta, wFieldsComp, SWT.FULL_SELECTION | SWT.MULTI, colinf, fieldsRows, lsMod, props );
 
     fdFields = new FormData();
     fdFields.left = new FormAttachment( 0, 0 );
@@ -529,6 +537,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
   private void saveMeta( SdmxStepMeta stepMeta ) {
     stepname = wStepname.getText(); // return value
+
+    stepMeta.allocateFields( sdmxDialogData.getCurrentFlowDimensionToCodes().size() );
 
     stepMeta.setProvider( sdmxDialogData.getChosenProvider() );
     stepMeta.setDataflow( sdmxDialogData.getChosenFlow() );
@@ -686,7 +696,23 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     fdDimensionList.right = new FormAttachment( middle , 0 );
     fdDimensionList.bottom = new FormAttachment( 70, 0 );
     wDimensionList.setLayoutData( fdDimensionList );
+
+    wDimensionList.setContentListener(new ModifyListener() {
+      @Override
+      public void modifyText(ModifyEvent modifyEvent) {
+        updateDataWithTableViewContent();
+      }
+    });
+
+    wDimensionList.addListener(SWT.Modify, new Listener() {
+      @Override
+      public void handleEvent(Event event) {
+        updateDataWithTableViewContent();
+      }
+    });
   }
+
+
 
   private void addDimensionButton() {
     wbDimensions = new Button(wSettingComp, SWT.PUSH);
@@ -809,7 +835,9 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     int dimRow = findDimensionRow( dimension, dims );
     wDimensionList.setText( code, 2, dimRow );
     wDimensionList.optWidth( true );
+    wDimensionList.notifyListeners( SWT.Modify, new Event() );
   }
+
 
   /* It scans the tableview and returns the number
    * of the row where the string d (dimension)
@@ -831,6 +859,27 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     for ( int i=0; i < itemNumber; i++ ){
       String[] item = wDimensionList.getItem( i );
       sdmxDialogData.updateDimensionCodes( item[0], item[1] );
+    }
+  }
+
+  /**
+   * Get the list of dim fields in the sdmx flow and put the result in the fields table view.
+   */
+  private void getFields() {
+    RowMetaInterface fields = new RowMeta();
+
+    SdmxStepMeta info = new SdmxStepMeta();
+    saveMeta( info );
+    int clearFields = SWT.YES;
+
+    if ( wFields.nrNonEmpty() > 0 ) {
+      MessageBox messageBox = new MessageBox( shell, SWT.YES | SWT.NO | SWT.CANCEL | SWT.ICON_QUESTION );
+      messageBox.setMessage( BaseMessages.getString( PKG, "SdmxDialog.ClearFieldList.DialogMessage" ) );
+      messageBox.setText( BaseMessages.getString( PKG, "SdmxDialog.ClearFieldList.DialogTitle" ) );
+      clearFields = messageBox.open();
+      if ( clearFields == SWT.CANCEL ) {
+        return;
+      }
     }
   }
 }
