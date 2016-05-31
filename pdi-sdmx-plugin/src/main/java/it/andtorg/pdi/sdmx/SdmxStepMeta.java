@@ -34,14 +34,12 @@ import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.annotations.Step;
 import org.pentaho.di.core.database.DatabaseMeta;
-import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.exception.KettleStepException;
-import org.pentaho.di.core.exception.KettleValueException;
-import org.pentaho.di.core.exception.KettleXMLException;
+import org.pentaho.di.core.exception.*;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaBase;
+import org.pentaho.di.core.row.value.ValueMetaFactory;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -371,24 +369,30 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * @param repository		the repository instance optionally read from
 	 * @param metaStore			the metaStore to optionally read from
 	 */
+  @Override
 	public void getFields(RowMetaInterface inputRowMeta, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space, Repository repository, IMetaStore metaStore) throws KettleStepException{
 
-		/*
-		 * This implementation appends the outputField to the row-stream
-		 */
+    for ( int i = 0; i < fields.length; i++ ) {
+      int type = fields[i].getType();
+      if ( type == ValueMetaInterface.TYPE_NONE) type = ValueMetaInterface.TYPE_STRING;
 
-		// a value meta object contains the meta data for a field
-		ValueMetaInterface v = new ValueMeta(outputField, ValueMeta.TYPE_STRING);
-		
-		// setting trim type to "both"
-		v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
+      try {
+        ValueMetaInterface v = ValueMetaFactory.createValueMeta( fields[i].getName(), type );
+        v.setConversionMask( fields[i].getFormat() );
+        v.setLength( fields[i].getLength() );
+        v.setPrecision( fields[i].getPrecision() );
+        v.setCurrencySymbol( fields[i].getCurrencySymbol() );
+        v.setDecimalSymbol( fields[i].getDecimalSymbol() );
+        v.setGroupingSymbol( fields[i].getGroupSymbol() );
+        v.setTrimType( fields[i].getTrimType() );
 
-		// the name of the step that adds this field
-		v.setOrigin(name);
-		
-		// modify the row structure and add the field this step generates  
-		inputRowMeta.addValueMeta(v);
-		
+        v.setOrigin( name );
+
+        inputRowMeta.addValueMeta( v );
+      } catch (KettlePluginException e) {
+        throw new KettleStepException( e );
+      }
+    }
 	}
 
 	/**
