@@ -48,7 +48,6 @@ import org.pentaho.di.core.Props;
 import org.pentaho.di.core.exception.KettlePluginException;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
-import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaBase;
 import org.pentaho.di.core.row.value.ValueMetaFactory;
@@ -536,12 +535,50 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       wDimensionList.removeEmptyRows();
       wDimensionList.setRowNums();
       wDimensionList.optWidth( true );
+
+    for ( int i = 0; i < meta.getInputFields().length; i++ ) {
+      TableItem item = wFields.table.getItem( i );
+      String fieldName = meta.getInputFields()[i].getName();
+      String type = meta.getInputFields()[i].getTypeDesc();
+      String length = "" + meta.getInputFields()[i].getLength();
+      String precision = "" + meta.getInputFields()[i].getPrecision();
+      String trim = meta.getInputFields()[i].getTrimTypeDesc();
+      String repeat =
+          meta.getInputFields()[i].isRepeated() ? BaseMessages.getString( PKG, "System.Combo.Yes" ) : BaseMessages
+              .getString( PKG, "System.Combo.No" );
+      String format = meta.getInputFields()[i].getFormat();
+      String currency = meta.getInputFields()[i].getCurrencySymbol();
+      String decimal = meta.getInputFields()[i].getDecimalSymbol();
+      String grouping = meta.getInputFields()[i].getGroupSymbol();
+
+      if ( fieldName != null ) item.setText( 1, fieldName );
+
+      if ( type != null ) item.setText( 2, type );
+
+      if ( format != null ) item.setText( 3, format );
+
+      if ( length != null ) item.setText( 4, length );
+
+      if ( precision != null ) item.setText( 5, precision );
+
+      if ( currency != null ) item.setText( 6, currency );
+
+      if ( decimal != null ) item.setText( 7, decimal );
+
+      if ( grouping != null ) item.setText( 8, grouping );
+
+      if ( trim != null ) item.setText( 9, trim );
+
+      if ( repeat != null ) item.setText( 10, repeat );
+    }
+
+    wFields.removeEmptyRows();
+    wFields.setRowNums();
+    wFields.optWidth( true );
   }
 
   private void saveMeta( SdmxStepMeta stepMeta ) {
     stepname = wStepname.getText(); // return value
-
-    stepMeta.allocateFields( sdmxDialogData.getCurrentFlowDimensionToCodes().size() );
 
     stepMeta.setProvider( sdmxDialogData.getChosenProvider() );
     stepMeta.setDataflow( sdmxDialogData.getChosenFlow() );
@@ -551,6 +588,33 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       stepMeta.updateCodesByDimension( d, dimToSave.get( d ) );
     }
     stepMeta.setSdmxQuery( sdmxDialogData.getSdmxQuery() );
+
+    int nrOfFields = wFields.nrNonEmpty();
+    stepMeta.allocateFields( nrOfFields );
+
+    for ( int i = 0; i < nrOfFields; i++  ) {
+      TableItem item = wFields.getNonEmpty( i );
+      meta.getInputFields()[i] = new SdmxInputField();
+
+      meta.getInputFields()[i].setName( item.getText( 1 ) );
+      meta.getInputFields()[i].setType( ValueMetaBase.getType( item.getText( 2 ) ) );
+      meta.getInputFields()[i].setFormat( item.getText( 3 ) );
+
+      String fLength = item.getText( 4 );
+      meta.getInputFields()[i].setLength( Const.toInt( fLength, -1 ) );
+
+      String sPrec = item.getText( 5 );
+      meta.getInputFields()[i].setPrecision( Const.toInt( sPrec, -1 ) );
+
+      meta.getInputFields()[i].setCurrencySymbol( item.getText( 6 ) );
+      meta.getInputFields()[i].setDecimalSymbol( item.getText( 7 ) );
+      meta.getInputFields()[i].setGroupSymbol( item.getText( 8 ) );
+
+      meta.getInputFields()[i].setTrimType( ValueMetaBase.getTrimTypeByDesc( item.getText( 9 ) ) );
+
+      meta.getInputFields()[i].setRepeated( BaseMessages.getString( PKG, "System.Combo.Yes" ).equalsIgnoreCase(
+          item.getText( 10 ) ) );
+    }
   }
 
   private void addProviderLabel(){

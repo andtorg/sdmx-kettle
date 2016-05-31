@@ -28,6 +28,7 @@ import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.eclipse.swt.widgets.Shell;
+import org.omg.CORBA.portable.ValueBase;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
@@ -40,6 +41,7 @@ import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
+import org.pentaho.di.core.row.value.ValueMetaBase;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -90,7 +92,10 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 *	{the package of the class specified}/messages/messages_{locale}.properties   
 	 */
 	private static Class<?> PKG = SdmxStepMeta.class; // for i18n purposes
-	
+
+  public static final String NO = "N";
+  public static final String YES = "Y";
+
 	/**
 	 * Stores the name of the field added to the row-stream. 
 	 */
@@ -233,6 +238,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * 
 	 * @return a string containing the XML serialization of this step
 	 */
+  @Override
 	public String getXML() throws KettleValueException {
 		StringBuilder retval = new StringBuilder( 1000 );
 
@@ -242,9 +248,9 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     retval.append( "    " ).append( XMLHandler.addTagValue( "flow_desc", dataflow == null ? "" : dataflow.getDescription() ) );
 
 		appendDimensions( retval );
+    appendFields( retval );
 
-    //todo delete; it was the demo
-    retval.append( "    " ).append( XMLHandler.addTagValue( "outputfield", outputField ) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "outputfield", outputField ) ); //todo delete; it was the demo
 
 		return retval.toString();
 	}
@@ -281,9 +287,35 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				dimensionToCodes.put( d, code );
 			}
 
-      allocateFields(0); //todo this must be invoked with the no. of field nodes retrieved from xml
+      Node fieldsNode = XMLHandler.getSubNode( stepnode, "fields" );
+      int nrfields = XMLHandler.countNodes( fieldsNode, "field" );
+      allocateFields( nrfields );
+
+      for ( int i = 0; i < nrfields; i++ ) {
+        Node fnode = XMLHandler.getSubNodeByNr( fieldsNode, "field", i );
+        fields[i] = new SdmxInputField();
+
+        fields[i].setName( XMLHandler.getTagValue( fnode, "name" ) );
+        fields[i].setType( ValueMetaBase.getType( XMLHandler.getTagValue( fnode, "type" ) ) );
+        fields[i].setLength( Const.toInt( XMLHandler.getTagValue( fnode, "length" ), -1 ) );
+        fields[i].setPrecision( Const.toInt( XMLHandler.getTagValue( fnode, "precision" ), -1 ) );
+        String srepeat = XMLHandler.getTagValue( fnode, "repeat" );
+        fields[i].setTrimType( ValueMetaBase.getTrimTypeByCode( XMLHandler.getTagValue( fnode, "trim_type" ) ) );
+
+        if ( srepeat != null ) {
+          fields[i].setRepeated( YES.equalsIgnoreCase( srepeat ) );
+        } else {
+          fields[i].setRepeated( false );
+        }
+
+        fields[i].setFormat( XMLHandler.getTagValue( fnode, "format" ) );
+        fields[i].setCurrencySymbol( XMLHandler.getTagValue( fnode, "currency" ) );
+        fields[i].setDecimalSymbol( XMLHandler.getTagValue( fnode, "decimal" ) );
+        fields[i].setGroupSymbol( XMLHandler.getTagValue( fnode, "group" ) );
+      }
+
 		} catch (Exception e) {
-			throw new KettleXMLException("Demo plugin unable to read step info from XML node", e);
+			throw new KettleXMLException("Sdmx plugin unable to read step info from XML node", e);
 		}
 
 	}	
@@ -434,5 +466,24 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 
 		}
 	}
+
+  private void appendFields( StringBuilder sb ) {
+    sb.append( "    <fields>" ).append( Const.CR );
+    for ( int i = 0; i < fields.length; i++ ) {
+      sb.append( "      <field>" ).append( Const.CR );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "name", fields[i].getName() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "type", fields[i].getTypeDesc() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "length", fields[i].getLength() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "precision", fields[i].getPrecision() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "trim_type", fields[i].getTrimTypeCode() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "repeat", fields[i].isRepeated() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "format", fields[i].getFormat() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "currency", fields[i].getCurrencySymbol() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "decimal", fields[i].getDecimalSymbol() ) );
+      sb.append( "        " ).append( XMLHandler.addTagValue( "group", fields[i].getGroupSymbol() ) );
+      sb.append( "      </field>" ).append( Const.CR );
+    }
+    sb.append( "    </fields>" ).append( Const.CR );
+  }
 
 }
