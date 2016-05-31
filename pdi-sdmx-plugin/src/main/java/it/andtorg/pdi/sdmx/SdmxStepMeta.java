@@ -103,6 +103,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
   private Provider provider;
 	private Dataflow dataflow;
 	private Map<Dimension, String> dimensionToCodes;
+  private String sdmxQuery;
 
   /**
 	 * Constructor should call super() to make sure the base class has a chance to initialize properly.
@@ -159,8 +160,10 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 * This method is called every time a new step is created and should allocate/set the step configuration
 	 * to sensible defaults. The values set here will be used by Spoon when a new step is created.    
 	 */
+  @Override
 	public void setDefault() {
-		outputField = "demo_field";
+		outputField = "demo_field"; // todo: be deleted
+    fields = new SdmxInputField[0];
 	}
 	
 	/**
@@ -398,6 +401,14 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void setInputFields(SdmxInputField[] fields) {
 		this.fields = fields;
 	}
+
+  public String getSdmxQuery() {
+    return sdmxQuery;
+  }
+
+  public void setSdmxQuery(String sdmxQuery) {
+    this.sdmxQuery = sdmxQuery;
+  }
 
   /**
    * Set the size the array of dimension fields.

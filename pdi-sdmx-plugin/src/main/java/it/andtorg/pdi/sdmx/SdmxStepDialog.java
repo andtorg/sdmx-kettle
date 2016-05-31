@@ -24,6 +24,7 @@ package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
+import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
@@ -44,11 +45,13 @@ import org.eclipse.swt.widgets.*;
 
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
+import org.pentaho.di.core.exception.KettlePluginException;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaBase;
+import org.pentaho.di.core.row.value.ValueMetaFactory;
 import org.pentaho.di.core.row.value.ValueMetaString;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
@@ -511,6 +514,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   }
 
   private void getData ( SdmxStepMeta meta ){
+
     if ( meta.getProvider() != null ) {
       sdmxDialogData.setChosenProvider( meta.getProvider() );
       wProvider.setText( meta.getProvider().getName() + ": " + meta.getProvider().getDescription());
@@ -546,6 +550,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     for ( Dimension d : dimToSave.keySet() ) {
       stepMeta.updateCodesByDimension( d, dimToSave.get( d ) );
     }
+    stepMeta.setSdmxQuery( sdmxDialogData.getSdmxQuery() );
   }
 
   private void addProviderLabel(){
@@ -711,8 +716,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     });
   }
 
-
-
   private void addDimensionButton() {
     wbDimensions = new Button(wSettingComp, SWT.PUSH);
     wbDimensions.setText( BaseMessages.getString( PKG, "SdmxDialog.GetDimensions.Button" ));
@@ -741,7 +744,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         }
       }
     });
-
   }
 
   private void addCodeListTableView() {
@@ -876,6 +878,46 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       if ( clearFields == SWT.CANCEL ) {
         return;
       }
+    }
+
+    try {
+      // add the time slot field
+      String timeFieldName = "TIME_SLOT";
+      int timeFieldType = ValueMetaInterface.TYPE_STRING;
+
+      // add the observation value field
+      String observationFieldName = "VALUE";
+      int observationFieldType = ValueMetaInterface.TYPE_NUMBER;
+
+      fields.addValueMeta( ValueMetaFactory.createValueMeta( timeFieldName, timeFieldType ) );
+      fields.addValueMeta( ValueMetaFactory.createValueMeta( observationFieldName, observationFieldType ) );
+
+      // add all the dimensions to RowMeta
+      for ( Dimension d : info.getDimensionToCodes().keySet() ){
+        String dimName = d.getId() ;
+        fields.addValueMeta( ValueMetaFactory.createValueMeta( dimName, ValueMetaInterface.TYPE_STRING ));
+      }
+    } catch (KettlePluginException e) {
+      e.printStackTrace();
+    }
+
+    if ( fields.size() > 0) {
+      if ( clearFields == SWT.YES ){
+        wFields.clearAll( false );
+      }
+      for (int i = 0; i < fields.size(); i++ ) {
+        ValueMetaInterface field = fields.getValueMeta( i );
+        wFields.add( field.getName(), field.getTypeDesc(), "", "", "", "", "", "", "none", "N" );
+      }
+
+      wFields.removeEmptyRows();
+      wFields.setRowNums();
+      wFields.optWidth( true );
+    } else {
+      MessageBox mb = new MessageBox( shell, SWT.OK | SWT.ICON_WARNING );
+      mb.setMessage( BaseMessages.getString( PKG, "SdmxDialog.UnableToFindFields.DialogMessage" ) );
+      mb.setText( BaseMessages.getString( PKG, "SdmxDialog.UnableToFindFields.DialogTitle" ) );
+      mb.open();
     }
   }
 }
