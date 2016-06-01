@@ -49,10 +49,13 @@ import org.pentaho.di.trans.step.StepDataInterface;
 public class SdmxStepData extends BaseStepData implements StepDataInterface {
 
 	public RowMetaInterface outputRowMeta;
+
+  public SdmxResultSet rs;
 	
     public SdmxStepData()
 	{
 		super();
+    rs = null;
 	}
 }
 	

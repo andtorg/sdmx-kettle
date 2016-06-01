@@ -23,6 +23,9 @@
 package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
+import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
+import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
+import it.bancaditalia.oss.sdmx.util.SdmxException;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMeta;
@@ -34,6 +37,8 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+
+import java.util.List;
 
 /**
  * This class is part of the demo step plug-in implementation.
@@ -124,6 +129,12 @@ public class SdmxStep extends BaseStep implements StepInterface {
 		SdmxStepMeta meta = (SdmxStepMeta) smi;
 		SdmxStepData data = (SdmxStepData) sdi;
 
+    // starts from beginning
+    data.outputRowMeta = new RowMeta();
+
+    // use meta.getFields() to add fields to the output row
+    meta.getFields(data.outputRowMeta, getStepname(), null, null, this, null, null);
+
 		// get incoming row, getRow() potentially blocks waiting for more rows, returns null if no more rows expected
 //		Object[] r = getRow(); todo to be deleted; it's for trans step
 		
@@ -141,29 +152,30 @@ public class SdmxStep extends BaseStep implements StepInterface {
 			// clone the input row structure and place it in our data object
 //			data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
 
-			// starts from beginning
-			data.outputRowMeta = new RowMeta();
+      // fill the resultset
+      try {
+        List<PortableTimeSeries> ts = SdmxClientHandler.getTimeSeries( meta.getProvider().getName(), meta.getSdmxQuery(), null, null);
+        data.rs = SdmxResultSet.getResultSet( ts );
+      } catch (SdmxException e) {
+        e.printStackTrace();
+      }
 
-			// use meta.getFields() to add fields to the output row
-			meta.getFields(data.outputRowMeta, getStepname(), null, null, this, null, null);
 		}
 
-		// safely add the string "Hello World!" at the end of the output row
-		// the row array will be resized if necessary 
+    Object[] r = data.rs.getRow();
+    if ( r == null ) {
+      setOutputDone();
+      return false;
+    }
 
-    Object[] r = getRowFromSdmxQuery();
-    Object[] outputRow = RowDataUtil.addValueData(r, data.outputRowMeta.size() - 1, "Hello World!");
-
-
-
-
+    incrementLinesInput();
 		// put the row to the output row stream
-		putRow(data.outputRowMeta, outputRow); 
+		putRow(data.outputRowMeta, r);
 
 		// log progress if it is time to to so
-		if (checkFeedback(getLinesRead())) {
-			logBasic("Linenr " + getLinesRead()); // Some basic logging
-		}
+//		if (checkFeedback(getLinesRead())) {
+//			logBasic("Linenr " + getLinesRead()); // Some basic logging
+//		}
 
 		// indicate that processRow() should be called again
 		return true;
@@ -192,10 +204,5 @@ public class SdmxStep extends BaseStep implements StepInterface {
 		super.dispose(meta, data);
 	}
 
-  public Object[] getRowFromSdmxQuery() {
-    Object[] retval = null;
-
-    return retval;
-  }
 
 }
