@@ -244,6 +244,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     retval.append( "    " ).append( XMLHandler.addTagValue( "provider_desc", provider == null ? "" : provider.getDescription() ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "flow_id", dataflow == null ? "" : dataflow.getId() ) );
     retval.append( "    " ).append( XMLHandler.addTagValue( "flow_desc", dataflow == null ? "" : dataflow.getDescription() ) );
+    retval.append( "    " ).append( XMLHandler.addTagValue( "query_sdmx", sdmxQuery == null ? "" : sdmxQuery ) );
 
 		appendDimensions( retval );
     appendFields( retval );
@@ -273,6 +274,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       dataflow.setId( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_id" ) ) );
       dataflow.setName( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_desc" ) ) ); //todo open issue on sdmx codebase for API getter/setter not clear
 
+      setSdmxQuery(XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "query_sdmx" ) ) );
+
 			Node dims = XMLHandler.getSubNode( stepnode, "dimensions" );
 			int nrDimensions = XMLHandler.countNodes( dims, "dimension" );
 
@@ -282,7 +285,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				d.setId( XMLHandler.getTagValue( dimNode, "dim_id" ) );
 				d.setPosition( Integer.parseInt( XMLHandler.getTagValue( dimNode, "dim_position" ) ) );
         String code = XMLHandler.getTagValue( dimNode, "dim_code" );
-				dimensionToCodes.put( d, code );
+				dimensionToCodes.put( d, ( code == null ? "" : code ) );
 			}
 
       Node fieldsNode = XMLHandler.getSubNode( stepnode, "fields" );
@@ -463,7 +466,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				sb.append( "        <dimension>" ).append( Const.CR );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_id", d.getId() ) );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_position", d.getPosition() ) );
-				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_code", dimensionToCodes.get( d ) ) );
+				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_code", dimensionToCodes.get( d ) == null ? "" :  dimensionToCodes.get( d ) ) );
 				sb.append( "        </dimension>" ).append( Const.CR );
 			}
 			sb.append( "    </dimensions>" ).append( Const.CR );

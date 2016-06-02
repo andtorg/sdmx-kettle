@@ -140,6 +140,7 @@ public class SdmxDialogData {
   public void updateDimensionCodes( String dimensionId, String codes ) {
     for ( Dimension d : currentFlowDimensionToCodes.keySet() ) {
       if ( d.getId().equals( dimensionId ) ) {
+        if ( codes == null ) throw new NullPointerException( "Dimension codes cannot be null" );
         currentFlowDimensionToCodes.put( d, codes );
         break;
       }
