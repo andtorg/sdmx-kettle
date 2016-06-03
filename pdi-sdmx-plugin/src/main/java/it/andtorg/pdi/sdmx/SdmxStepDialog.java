@@ -26,7 +26,6 @@ package it.andtorg.pdi.sdmx;
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
-import it.bancaditalia.oss.sdmx.api.PortableTimeSeries;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import it.bancaditalia.oss.sdmx.client.SdmxClientHandler;
 import it.bancaditalia.oss.sdmx.helper.ProviderComparator;
@@ -68,33 +67,15 @@ import java.util.*;
 import java.util.List;
 
 /**
- * This class is part of the demo step plug-in implementation.
- * It demonstrates the basics of developing a plug-in step for PDI. 
- * 
- * The demo step adds a new string field to the row stream and sets its
- * value to "Hello World!". The user may select the name of the new field.
- *   
- * This class is the implementation of StepDialogInterface.
- * Classes implementing this interface need to:
- * 
- * - build and open a SWT dialog displaying the step's settings (stored in the step's meta object)
- * - write back any changes the user makes to the step's meta object
- * - report whether the user changed any settings when confirming the dialog 
- * 
+ * The plugin GUI plugin class.
+ *
+ * @author Andrea Torre
+ * @since 01/06/16
  */
 @SuppressWarnings({"FieldCanBeLocal", "Convert2Lambda"})
 public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterface {
-
-	/**
-	 *	The PKG member is used when looking up internationalized strings.
-	 *	The properties file with localized keys is expected to reside in 
-	 *	{the package of the class specified}/messages/messages_{locale}.properties   
-	 */
 	private static Class<?> PKG = SdmxStepMeta.class; // for i18n purposes
 
-	// this is the object the stores the step's settings
-	// the dialog reads the settings from it when opening
-	// the dialog writes the settings to it when confirmed 
 	private SdmxStepMeta meta;
   private SdmxProviderHandler providerHandler;
   private SdmxDialogData sdmxDialogData;
@@ -102,8 +83,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
   private boolean gotProviders;
 
-	// text field holding the name of the field to add to the row stream
-	private Text wHelloFieldName;
   private CTabFolder wTabFolder;
   private FormData fdTabFolder;
 
@@ -243,14 +222,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		fdlValName.top = new FormAttachment(wStepname, margin);
 		wlValName.setLayoutData(fdlValName);
 
-		wHelloFieldName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		props.setLook(wHelloFieldName);
-		wHelloFieldName.addModifyListener(lsMod);
-		FormData fdValName = new FormData();
-		fdValName.left = new FormAttachment(middle, 0);
-		fdValName.right = new FormAttachment(100, 0);
-		fdValName.top = new FormAttachment(wStepname, margin);
-		wHelloFieldName.setLayoutData(fdValName);
 
 		wTabFolder = new CTabFolder( shell, SWT.BORDER );
 		props.setLook( wTabFolder, Props.WIDGET_STYLE_TAB );
@@ -261,7 +232,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
 		fdTabFolder = new FormData();
 		fdTabFolder.left = new FormAttachment( 0, 0 );
-		fdTabFolder.top = new FormAttachment( wHelloFieldName, margin );
+		fdTabFolder.top = new FormAttachment( wStepname, margin );
 		fdTabFolder.right = new FormAttachment( 100, 0 );
 		fdTabFolder.bottom = new FormAttachment( 100, -50 );
 		wTabFolder.setLayoutData( fdTabFolder );
@@ -294,7 +265,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 			public void widgetDefaultSelected(SelectionEvent e) {ok();}
 		};
 		wStepname.addSelectionListener(lsDef);
-		wHelloFieldName.addSelectionListener(lsDef);
 
 		// Detect X or ALT-F4 or something that kills this window and cancel the dialog properly
 		shell.addShellListener(new ShellAdapter() {
@@ -344,7 +314,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 	 */
 	private void populateDialog() {
 		wStepname.selectAll(); //todo whats this for?
-		wHelloFieldName.setText(meta.getOutputField());	
 	}
 
 	/**
@@ -372,7 +341,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		// Setting to step name from the dialog control
 		stepname = wStepname.getText(); 
 		// Setting the  settings to the meta object
-		meta.setOutputField(wHelloFieldName.getText());
+
 		// close the SWT dialog window
 
     saveMeta( meta );
