@@ -43,23 +43,15 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import java.util.List;
 
 /**
- * This class is part of the demo step plug-in implementation.
- * It demonstrates the basics of developing a plug-in step for PDI. 
- * 
- * The demo step adds a new string field to the row stream and sets its
- * value to "Hello World!". The user may select the name of the new field.
- *   
- * This class is the implementation of StepInterface.
- * Classes implementing this interface need to:
- * 
+ * The concrete class in charge of outputting rows to the stream.
+ * </p>
+ * It does the following:
  * - initialize the step
  * - execute the row processing logic
  * - dispose of the step 
  * 
- * Please do not create any local fields in a StepInterface class. Store any
- * information related to the processing logic in the supplied step data interface
- * instead.  
- * 
+ * @author Andrea Torre
+ * @since 01/06/2016
  */
 
 public class SdmxStep extends BaseStep implements StepInterface {
@@ -137,22 +129,12 @@ public class SdmxStep extends BaseStep implements StepInterface {
     // use meta.getFields() to add fields to the output row
     meta.getFields(data.outputRowMeta, getStepname(), null, null, this, null, null);
 
-		// get incoming row, getRow() potentially blocks waiting for more rows, returns null if no more rows expected
-//		Object[] r = getRow(); todo to be deleted; it's for trans step
-		
-		// if no more rows are expected, indicate step is finished and processRow() should not be called again
-//		if (r == null){ todo to be deleted; it's for trans step
-//			setOutputDone();
-//			return false;
-//		}
 
 		// the "first" flag is inherited from the base step implementation
 		// it is used to guard some processing tasks, like figuring out field indexes
 		// in the row structure that only need to be done once
 		if (first) {
 			first = false;
-			// clone the input row structure and place it in our data object
-//			data.outputRowMeta = (RowMetaInterface) getInputRowMeta().clone();
 
       // fill the resultset
       try {

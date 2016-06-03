@@ -79,7 +79,7 @@ import org.w3c.dom.Node;
 @Step(
 		id = "SdmxStep",
 		image = "it/andtorg/pdi/sdmx/resources/sdmx.svg",
-		i18nPackageName="it.andtorg.pdi.sdk.samples.steps.demo", // TODO: 03/05/16
+		i18nPackageName="it.andtorg.pdi.steps.sdmx",
 		name= "SdmxStep.Name",
 		description = "SdmxStep.TooltipDesc",
 		categoryDescription="i18n:org.pentaho.di.trans.step:BaseStep.Category.Input"
@@ -96,10 +96,6 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
   public static final String NO = "N";
   public static final String YES = "Y";
 
-	/**
-	 * Stores the name of the field added to the row-stream. 
-	 */
-	private String outputField; //// TODO: 30/05/16 maybe delete
 	private SdmxProviderHandler providerHandler = SdmxProviderHandler.INSTANCE;
 
 	/** The fields to import */
@@ -167,25 +163,9 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 */
   @Override
 	public void setDefault() {
-		outputField = "demo_field"; // todo: be deleted
     fields = new SdmxInputField[0];
 	}
 	
-	/**
-	 * Getter for the name of the field added by this step
-	 * @return the name of the field added
-	 */
-	public String getOutputField() {
-		return outputField;
-	}
-
-	/**
-	 * Setter for the name of the field added by this step
-	 * @param outputField the name of the field added
-	 */
-	public void setOutputField(String outputField) {
-		this.outputField = outputField;
-	}
 
   public Provider getProvider() {
     return provider;
@@ -251,8 +231,6 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 		appendDimensions( retval );
     appendFields( retval );
 
-    retval.append( "    " ).append( XMLHandler.addTagValue( "outputfield", outputField ) ); //todo delete; it was the demo
-
 		return retval.toString();
 	}
 
@@ -269,7 +247,6 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
 
 		try {
-			setOutputField(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "outputfield")));
       setProvider( providerHandler.getProviderByName(
           XMLHandler.getNodeValue (XMLHandler.getSubNode( stepnode, "provider_id" ) ) ) );
 
@@ -334,7 +311,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException
 	{
 		try{
-			rep.saveStepAttribute(id_transformation, id_step, "outputfield", outputField); //$NON-NLS-1$
+//			rep.saveStepAttribute(id_transformation, id_step, "outputfield", outputField); //$NON-NLS-1$ todo: delete when implements repo accessors
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to save step into repository: "+id_step, e); 
@@ -353,7 +330,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 */
 	public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException  {
 		try{
-			outputField  = rep.getStepAttributeString(id_step, "outputfield"); //$NON-NLS-1$
+//			outputField  = rep.getStepAttributeString(id_step, "outputfield"); //$NON-NLS-1$ todo: same as above
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to load step from repository", e);
@@ -472,7 +449,6 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				sb.append( "        </dimension>" ).append( Const.CR );
 			}
 			sb.append( "    </dimensions>" ).append( Const.CR );
-
 		}
 	}
 
