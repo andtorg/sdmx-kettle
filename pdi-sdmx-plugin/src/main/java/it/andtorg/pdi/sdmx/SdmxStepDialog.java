@@ -212,16 +212,6 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 		fdStepname.right = new FormAttachment(100, 0);
 		wStepname.setLayoutData(fdStepname);
 
-		// output field value
-		Label wlValName = new Label(shell, SWT.RIGHT);
-		wlValName.setText(BaseMessages.getString(PKG, "Sdmx.FieldName.Label"));
-		props.setLook(wlValName);
-		FormData fdlValName = new FormData();
-		fdlValName.left = new FormAttachment(0, 0);
-		fdlValName.right = new FormAttachment(middle, -margin);
-		fdlValName.top = new FormAttachment(wStepname, margin);
-		wlValName.setLayoutData(fdlValName);
-
 
 		wTabFolder = new CTabFolder( shell, SWT.BORDER );
 		props.setLook( wTabFolder, Props.WIDGET_STYLE_TAB );
