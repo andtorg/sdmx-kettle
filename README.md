@@ -1,6 +1,7 @@
 # PDI SDMX Plugin
- This is a input step plugin that allows the user to consume webservices provided by various
- istitutions that disseminate statistical timeseries based on [SDMX](https://sdmx.org/) technical standard.
+ This is a [Pentaho Data Integration](http://community.pentaho.com/projects/data-integration/) input step plugin 
+ that allows the user to consume webservices provided by various istitutions that disseminate statistical timeseries 
+ based on [SDMX](https://sdmx.org/) technical standard.
  
  The plugin is actually a wrapper around a connector java library, available [here](https://github.com/amattioc/SDMX/tree/master/JAVA)
  as stand-alone project. It helps user to both explore the dataflows containing the data and build a query,
