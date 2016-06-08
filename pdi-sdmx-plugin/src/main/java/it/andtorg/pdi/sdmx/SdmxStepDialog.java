@@ -122,6 +122,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
   private TableView wFields;
   private FormData fdFields;
 
+  private Display display;
   private int middle, margin;
 
   /**
@@ -159,7 +160,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
 
 		// store some convenient SWT variables 
 		Shell parent = getParent();
-		Display display = parent.getDisplay();
+		display = parent.getDisplay();
 
 		// SWT code for preparing the dialog
 		shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MIN | SWT.MAX);
@@ -660,9 +661,12 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
         if (sdmxDialogData.getChosenProvider() !=null ){
           Provider p = sdmxDialogData.getChosenProvider();
           try {
+            setWaitCursor();
             sdmxDialogData.setAvailableFlows(SdmxClientHandler.getFlows(p.getName(),null));
           } catch (SdmxException e1) {
             e1.printStackTrace();
+          } finally {
+            setArrowCursor();
           }
           Map <String,String> flows = sdmxDialogData.getAvailableFlows();
           String[] flowDesc = new String[flows.values().size()];
@@ -755,6 +759,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       public void handleEvent(Event e) {
         List<Dimension> dims = null;
         try {
+          setWaitCursor();
           dims = SdmxClientHandler.getDimensions(sdmxDialogData.getChosenProvider().getName(), sdmxDialogData.getChosenFlow().getId());
           sdmxDialogData.initializeFlowDimensions( dims );
           wDimensionList.removeAll();
@@ -766,6 +771,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           wDimensionList.optWidth( true );
         } catch (SdmxException e1) {
           e1.printStackTrace();
+        } finally {
+          setArrowCursor();
         }
       }
     });
@@ -835,6 +842,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
           rowMeta.addValueMeta( field );
         }
         try {
+          setWaitCursor();
           List<List<String>> ts = sdmxDialogData.getAvailableTimeSeriesNames();
           PreviewTimeSeriesDialog tsd = new PreviewTimeSeriesDialog( shell, SWT.NONE, rowMeta, transMeta, ts );
           tsd.open();
@@ -844,6 +852,8 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
               BaseMessages.getString( PKG, "SdmxDialog.NoSeries.Message" ) );
           dialog.open();
           ex.printStackTrace();
+        } finally {
+          setArrowCursor();
         }
       }
     });
@@ -945,4 +955,13 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
       mb.open();
     }
   }
+
+  private void setWaitCursor() {
+    shell.setCursor( new Cursor( display, SWT.CURSOR_WAIT ) );
+  }
+
+  private void setArrowCursor() {
+    shell.setCursor( new Cursor( display, SWT.CURSOR_ARROW ) );
+  }
+
 }
