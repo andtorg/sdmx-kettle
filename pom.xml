@@ -21,6 +21,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <resource.plugin.version>2.7</resource.plugin.version>
     <sdmx.java.version>1.6</sdmx.java.version>
     <junit.version>4.12</junit.version>
+    <mockito.version>1.10.19</mockito.version>
   </properties>
 
   <profiles>
