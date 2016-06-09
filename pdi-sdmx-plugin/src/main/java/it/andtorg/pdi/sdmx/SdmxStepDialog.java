@@ -976,6 +976,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wDimensionList.removeAll();
     sdmxDialogData.getCurrentFlowDimensionToCodes().clear();
 
-
+    wCodeList.removeAll();
+    wFields.removeAll();
   }
 }
