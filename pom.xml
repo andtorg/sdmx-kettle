@@ -14,8 +14,8 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <packaging>pom</packaging>
 
   <properties>
-    <kettle.folder>/home/andrea/Bi/Kff/Software/pdi/6.0.0</kettle.folder>
-    <kettle.version>6.0.1.0-386</kettle.version>
+    <kettle.folder>/home/andrea/Bi/Kff/Software/pdi/6.1.0</kettle.folder>
+    <kettle.version>6.1.0.1-196</kettle.version>
     <swt.version>4.3</swt.version>
     <dependency.plugin.version>2.10</dependency.plugin.version>
     <resource.plugin.version>2.7</resource.plugin.version>
