@@ -618,7 +618,7 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     wProvider.addSelectionListener(new SelectionAdapter() {
       @Override
       public void widgetSelected(SelectionEvent e) {
-        sdmxDialogData.setChosenProvider( providerHandler.getProviderByName(((CCombo)e.getSource()).getText().split(":")[0]) );
+        setProvider( e );
       }
     });
 
@@ -964,4 +964,15 @@ public class SdmxStepDialog extends BaseStepDialog implements StepDialogInterfac
     shell.setCursor( new Cursor( display, SWT.CURSOR_ARROW ) );
   }
 
+  private void setProvider(SelectionEvent e) {
+    sdmxDialogData.setChosenProvider( providerHandler.getProviderByName(((CCombo)e.getSource()).getText().split(":")[0]) );
+    clearDialog();
+  }
+
+  private void clearDialog() {
+    wFlow.setText("");
+    sdmxDialogData.setChosenFlow( null );
+
+    System.out.println("foo");
+  }
 }
