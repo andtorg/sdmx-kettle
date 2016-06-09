@@ -191,7 +191,7 @@ public class SdmxDialogData {
   public String getSdmxQuery(){
     if ( chosenProvider == null ) throw new IllegalStateException("Provider must be chosen");
     QueryBuilder qb = SdmxProviderHandler.INSTANCE.getQueryBuilder( chosenProvider );
-    return qb.getSdmxQuery( chosenFlow.getId(), currentFlowDimensionToCodes );
+    return qb.getSdmxQuery( chosenFlow.getId(), currentFlowDimensionToCodes ); //todo: triggers a NPE on chosenFlow.getId when chosenFlow is null; happens user clears dialog and then saves
   }
 
   public List<List<String>> getAvailableTimeSeriesNames() throws SdmxException {
