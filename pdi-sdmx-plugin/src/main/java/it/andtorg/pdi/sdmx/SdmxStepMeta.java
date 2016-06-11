@@ -119,6 +119,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 			}
 		};
 		this.dimensionToCodes = new TreeMap<>( comparator );
+		fields = new SdmxInputField[0];
 	}
 	
 	/**
