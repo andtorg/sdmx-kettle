@@ -78,6 +78,7 @@ public class SdmxStepMetaLoadSaveTest {
   @Test
   public void testSerialization() throws KettleException{
     tester.testXmlRoundTrip();
+    tester.testRepoRoundTrip();
   }
 
   public class SdmxInputFieldValidator implements FieldLoadSaveValidator<SdmxInputField> {

@@ -312,7 +312,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException
 	{
 		try{
-//			rep.saveStepAttribute(id_transformation, id_step, "outputfield", outputField); //$NON-NLS-1$ todo: delete when implements repo accessors
+			rep.saveStepAttribute(id_transformation, id_step, "provider_id", provider == null ? "" : provider.getName() );
+			rep.saveStepAttribute(id_transformation, id_step, "provider_desc", provider == null ? "" : provider.getDescription() );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to save step into repository: "+id_step, e); 
@@ -331,7 +332,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	 */
 	public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException  {
 		try{
-//			outputField  = rep.getStepAttributeString(id_step, "outputfield"); //$NON-NLS-1$ todo: same as above
+      setProvider( providerHandler.getProviderByName( rep.getStepAttributeString(id_step, "provider_id" ) ) );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to load step from repository", e);
