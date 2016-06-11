@@ -173,6 +173,12 @@
       <version>${esapi.version}</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>xerces</groupId>
+      <artifactId>xercesImpl</artifactId>
+      <version>${xerces.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <repositories>

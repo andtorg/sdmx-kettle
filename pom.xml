@@ -23,6 +23,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <junit.version>4.12</junit.version>
     <mockito.version>1.10.19</mockito.version>
     <esapi.version>2.0.1</esapi.version>
+    <xerces.version>2.9.0</xerces.version>
   </properties>
 
   <profiles>
