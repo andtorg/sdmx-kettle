@@ -316,6 +316,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 			rep.saveStepAttribute(id_transformation, id_step, "provider_desc", provider == null ? "" : provider.getDescription() );
 			rep.saveStepAttribute( id_transformation, id_step, "flow_id", dataflow.getId() );
 			rep.saveStepAttribute( id_transformation, id_step, "flow_desc", dataflow.getDescription() );
+      rep.saveStepAttribute( id_transformation, id_step, "query_sdmx", getSdmxQuery() );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to save step into repository: "+id_step, e); 
@@ -337,6 +338,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       setProvider( providerHandler.getProviderByName( rep.getStepAttributeString(id_step, "provider_id" ) ) );
       dataflow.setId( rep.getStepAttributeString( id_step, "flow_id" ) );
       dataflow.setName( rep.getStepAttributeString( id_step, "flow_desc" ) );
+      setSdmxQuery( rep.getStepAttributeString( id_step, "query_sdmx" ) );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to load step from repository", e);

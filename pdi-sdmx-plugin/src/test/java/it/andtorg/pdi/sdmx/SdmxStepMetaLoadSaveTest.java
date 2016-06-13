@@ -51,15 +51,15 @@ public class SdmxStepMetaLoadSaveTest {
   @Before
   public void setUp() throws Exception {
 
-    List<String> attributes = Arrays.asList( "provider", "dataflow" ); //todo: flows
+    List<String> attributes = Arrays.asList( "provider", "dataflow", "sdmxQuery"  ); //sdmxquery
 
     Map<String,String> getters = new HashMap<>();
     getters.put( "provider", "getProvider" );
     getters.put( "dataflow", "getDataflow");
+    getters.put( "sdmxQuery", "getSdmxQuery");
 
     Map<String,String> setters = new HashMap<>();
     setters.put( "provider", "setProvider" );
-//    setters.put( "dataflow", "setDataflow" );
 
     Map<String, FieldLoadSaveValidator<?>> attributeValidators = new HashMap<>( );
     Map<String, FieldLoadSaveValidator<?>> typeValidators = new HashMap<>(  );
