@@ -252,7 +252,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
           XMLHandler.getNodeValue (XMLHandler.getSubNode( stepnode, "provider_id" ) ) ) );
 
       dataflow.setId( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_id" ) ) );
-      dataflow.setName( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_desc" ) ) ); //todo open issue on sdmx codebase for API getter/setter not clear
+      dataflow.setName( XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "flow_desc" ) ) );
 
       setSdmxQuery(XMLHandler.getNodeValue( XMLHandler.getSubNode( stepnode, "query_sdmx" ) ) );
 
@@ -314,6 +314,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 		try{
 			rep.saveStepAttribute(id_transformation, id_step, "provider_id", provider == null ? "" : provider.getName() );
 			rep.saveStepAttribute(id_transformation, id_step, "provider_desc", provider == null ? "" : provider.getDescription() );
+			rep.saveStepAttribute( id_transformation, id_step, "flow_id", dataflow.getId() );
+			rep.saveStepAttribute( id_transformation, id_step, "flow_desc", dataflow.getDescription() );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to save step into repository: "+id_step, e); 
@@ -333,6 +335,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 	public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException  {
 		try{
       setProvider( providerHandler.getProviderByName( rep.getStepAttributeString(id_step, "provider_id" ) ) );
+      dataflow.setId( rep.getStepAttributeString( id_step, "flow_id" ) );
+      dataflow.setName( rep.getStepAttributeString( id_step, "flow_desc" ) );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to load step from repository", e);

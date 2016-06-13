@@ -25,6 +25,7 @@
 package it.andtorg.pdi.sdmx;
 
 
+import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Before;
@@ -50,13 +51,15 @@ public class SdmxStepMetaLoadSaveTest {
   @Before
   public void setUp() throws Exception {
 
-    List<String> attributes = Arrays.asList( "provider" );
+    List<String> attributes = Arrays.asList( "provider", "dataflow" ); //todo: flows
 
     Map<String,String> getters = new HashMap<>();
     getters.put( "provider", "getProvider" );
+    getters.put( "dataflow", "getDataflow");
 
     Map<String,String> setters = new HashMap<>();
     setters.put( "provider", "setProvider" );
+//    setters.put( "dataflow", "setDataflow" );
 
     Map<String, FieldLoadSaveValidator<?>> attributeValidators = new HashMap<>( );
     Map<String, FieldLoadSaveValidator<?>> typeValidators = new HashMap<>(  );
@@ -68,18 +71,22 @@ public class SdmxStepMetaLoadSaveTest {
 //    typeValidators.put( SdmxInputField[].class.getCanonicalName(), new ArrayLoadSaveValidator<SdmxInputField>( new SdmxInputFieldValidator() ) );
 //    typeValidators.put( Provider[].class.getCanonicalName(), new ArrayLoadSaveValidator<Provider>( new ProviderValidator(), 10 ) );
     typeValidators.put( Provider.class.getCanonicalName(),  new ProviderValidator() );
-
+    typeValidators.put( Dataflow.class.getCanonicalName(),  new DataflowValidator() );
 
     tester = new LoadSaveTester( SdmxStepMeta.class, attributes, getters, setters, attributeValidators,
         typeValidators );
-
   }
 
   @Test
-  public void testSerialization() throws KettleException{
+  public void testXMLSerialization() throws KettleException{
     tester.testXmlRoundTrip();
+  }
+
+  @Test
+  public void testRepositorySerialization() throws KettleException {
     tester.testRepoRoundTrip();
   }
+
 
   public class SdmxInputFieldValidator implements FieldLoadSaveValidator<SdmxInputField> {
 
@@ -118,6 +125,30 @@ public class SdmxStepMetaLoadSaveTest {
       return new EqualsBuilder()
           .append( testProvider.getName() , anotherProvider.getName() )
           .append( testProvider.getDescription(), anotherProvider.getDescription() )
+          .isEquals();
+    }
+  }
+
+  public class DataflowValidator implements FieldLoadSaveValidator<Dataflow> {
+
+    @Override
+    public Dataflow getTestObject() {
+      Dataflow df = new Dataflow();
+      df.setId( UUID.randomUUID().toString() );
+      df.setName( UUID.randomUUID().toString() );
+      return df;
+    }
+
+    @Override
+    public boolean validateTestObject(Dataflow testDataflow, Object actualDataflow) {
+      if ( !( actualDataflow instanceof Dataflow ) ) {
+        return false;
+      }
+
+      Dataflow anotherDataflow = ( Dataflow ) actualDataflow;
+      return new EqualsBuilder()
+          .append( testDataflow.getId(), anotherDataflow.getId() )
+          .append( testDataflow.getName(), anotherDataflow.getName() )
           .isEquals();
     }
   }
