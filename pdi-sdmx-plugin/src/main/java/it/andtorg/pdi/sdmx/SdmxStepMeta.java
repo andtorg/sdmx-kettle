@@ -321,6 +321,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       rep.saveStepAttribute( id_transformation, id_step, "query_sdmx", getSdmxQuery() );
 
       saveDimensionsToRepository( rep, id_transformation, id_step );
+      saveFieldsToRepository( rep, id_transformation, id_step );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to save step into repository: "+id_step, e); 
@@ -344,6 +345,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       dataflow.setName( rep.getStepAttributeString( id_step, "flow_desc" ) );
       setSdmxQuery( rep.getStepAttributeString( id_step, "query_sdmx" ) );
       readDimensionsFromRepository( rep, id_step );
+      readFieldsFromRepository( rep, id_step );
     }
 		catch(Exception e){
 			throw new KettleException("Unable to load step from repository", e);
@@ -484,7 +486,7 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
     sb.append( "    </fields>" ).append( Const.CR );
   }
 
-  private void saveDimensionsToRepository( Repository rep, ObjectId id_transformation, ObjectId id_step) throws KettleException {
+  private void saveDimensionsToRepository( Repository rep, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
     if ( dimensionToCodes != null && dimensionToCodes.keySet().size() > 0 ) {
 
       int i = 0;
@@ -494,6 +496,23 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
         rep.saveStepAttribute( id_transformation, id_step, i, "dim_code", dimensionToCodes.get( d ) == null ? "" :  dimensionToCodes.get( d ) );
         i++;
       }
+    }
+  }
+
+  private void saveFieldsToRepository( Repository rep, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
+    for ( int i = 0; i < fields.length; i++ ) {
+      SdmxInputField field = fields[i];
+
+      rep.saveStepAttribute( id_transformation, id_step, i, "name", field.getName() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "type", field.getTypeDesc() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "length", field.getLength() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "precision", field.getPrecision() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "trim_type", field.getTrimTypeCode() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "repeat", field.isRepeated() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "format", field.getFormat() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "currency", field.getCurrencySymbol() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "decimal", field.getDecimalSymbol() );
+      rep.saveStepAttribute( id_transformation, id_step, i, "group", field.getGroupSymbol() );
     }
   }
 
@@ -507,6 +526,33 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       String code = rep.getStepAttributeString( id_step, i, "dim_code" );
 
       dimensionToCodes.put( d, ( code == null ? "" : code ) );
+    }
+  }
+
+  private void readFieldsFromRepository( Repository rep, ObjectId id_step ) throws KettleException {
+    int nrFields = rep.countNrStepAttributes( id_step, "trim_type" );
+    allocateFields( nrFields );
+
+    for ( int i = 0; i < nrFields; i++ ) {
+      SdmxInputField field = new SdmxInputField();
+
+      field.setName( rep.getStepAttributeString( id_step, i, "name" ) );
+      field.setType( rep.getStepAttributeString( id_step, i, "type" ) );
+      field.setLength( (int) rep.getStepAttributeInteger( id_step, i,  "length" ) );
+      field.setPrecision( (int) rep.getStepAttributeInteger( id_step, i,  "precision" ) );
+      field.setTrimType( ValueMetaBase.getTrimTypeByCode( rep.getStepAttributeString( id_step, i, "trim_type" ) ) );
+      field.setFormat( rep.getStepAttributeString( id_step, i, "format" ) );
+      field.setCurrencySymbol( rep.getStepAttributeString( id_step, i, "currency" ) );
+      field.setDecimalSymbol( rep.getStepAttributeString( id_step, i, "decimal" ) );
+      field.setGroupSymbol( rep.getStepAttributeString( id_step, i, "group" ) );
+
+      String srepeat = rep.getStepAttributeString( id_step, i, "repeat" );
+      if ( srepeat != null ) {
+        field.setRepeated( YES.equalsIgnoreCase( srepeat ) );
+      } else {
+        field.setRepeated( false );
+      }
+      fields[i] = field;
     }
   }
 

@@ -35,7 +35,6 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.steps.loadsave.LoadSaveTester;
 import org.pentaho.di.trans.steps.loadsave.validator.ArrayLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.FieldLoadSaveValidator;
-import org.pentaho.di.trans.steps.loadsave.validator.MapLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.StringLoadSaveValidator;
 
 import java.util.*;
@@ -67,6 +66,7 @@ public class SdmxStepMetaLoadSaveTest {
     Map<String, FieldLoadSaveValidator<?>> attributeValidators = new HashMap<>( );
     Map<String, FieldLoadSaveValidator<?>> typeValidators = new HashMap<>(  );
 
+    @SuppressWarnings("Convert2Lambda")
     Comparator<Dimension> comparator = new Comparator<Dimension>() {
       @Override
       public int compare(Dimension o1, Dimension o2) {
@@ -174,7 +174,7 @@ public class SdmxStepMetaLoadSaveTest {
 
     @Override
     public boolean validateTestObject( Dimension testDimension, Object actualDimension ) {
-      if ( !( testDimension instanceof Dimension ) ) {
+      if ( !( actualDimension instanceof Dimension ) ) {
         return false;
       }
       Dimension anotherDim = ( Dimension ) actualDimension;
@@ -192,9 +192,10 @@ public class SdmxStepMetaLoadSaveTest {
     private final Comparator<KeyObjectType> keyComparator;
     private final Integer elements;
 
-    public CustomMapLoadSaveValidator( FieldLoadSaveValidator<KeyObjectType> keyFieldValidator,
-                                 FieldLoadSaveValidator<ValueObjectType> valueFieldValidator,
-                                       Comparator<KeyObjectType> keyFieldComparator ) {
+    @SuppressWarnings("unused")
+    public CustomMapLoadSaveValidator(FieldLoadSaveValidator<KeyObjectType> keyFieldValidator,
+                                      FieldLoadSaveValidator<ValueObjectType> valueFieldValidator,
+                                      Comparator<KeyObjectType> keyFieldComparator ) {
       keyValidator = keyFieldValidator;
       valueValidator = valueFieldValidator;
       keyComparator = keyFieldComparator;
@@ -213,7 +214,7 @@ public class SdmxStepMetaLoadSaveTest {
     @Override
     public Map<KeyObjectType, ValueObjectType> getTestObject() {
       int max = elements == null ? new Random().nextInt( 100 ) + 50 : elements;
-      Map<KeyObjectType, ValueObjectType> result = new TreeMap<KeyObjectType, ValueObjectType>( keyComparator );
+      Map<KeyObjectType, ValueObjectType> result = new TreeMap<>( keyComparator );
       for ( int i = 0; i < max; i++ ) {
         result.put( keyValidator.getTestObject(), valueValidator.getTestObject() );
       }
