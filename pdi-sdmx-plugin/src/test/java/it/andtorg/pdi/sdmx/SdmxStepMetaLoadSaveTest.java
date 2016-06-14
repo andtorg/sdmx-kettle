@@ -26,18 +26,17 @@ package it.andtorg.pdi.sdmx;
 
 
 import it.bancaditalia.oss.sdmx.api.Dataflow;
+import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.steps.loadsave.LoadSaveTester;
-import org.pentaho.di.trans.steps.loadsave.validator.ArrayLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.FieldLoadSaveValidator;
+import org.pentaho.di.trans.steps.loadsave.validator.MapLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.StringLoadSaveValidator;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -51,12 +50,14 @@ public class SdmxStepMetaLoadSaveTest {
   @Before
   public void setUp() throws Exception {
 
-    List<String> attributes = Arrays.asList( "provider", "dataflow", "sdmxQuery"  ); //sdmxquery
+    List<String> attributes = Arrays.asList( "provider", "dataflow", "sdmxQuery", "dimensionToCodes"  );
 
     Map<String,String> getters = new HashMap<>();
     getters.put( "provider", "getProvider" );
     getters.put( "dataflow", "getDataflow");
     getters.put( "sdmxQuery", "getSdmxQuery");
+    getters.put( "dimensionToCodes", "getDimensionToCodes");
+
 
     Map<String,String> setters = new HashMap<>();
     setters.put( "provider", "setProvider" );
@@ -64,12 +65,16 @@ public class SdmxStepMetaLoadSaveTest {
     Map<String, FieldLoadSaveValidator<?>> attributeValidators = new HashMap<>( );
     Map<String, FieldLoadSaveValidator<?>> typeValidators = new HashMap<>(  );
 
-//    attributeValidators.put( "provider", new ProviderValidator()  );
+    Comparator<Dimension> comparator = new Comparator<Dimension>() {
+      @Override
+      public int compare(Dimension o1, Dimension o2) {
+        return o1.getPosition() - o2.getPosition();
+      }
+    };
 
-//    FieldLoadSaveValidator<String[]> stringArrayLoadSaveValidator = new ArrayLoadSaveValidator<String>( new StringLoadSaveValidator(), 25 );
+    attributeValidators.put( "dimensionToCodes", new CustomMapLoadSaveValidator<>(
+        new DimensionLoadSaveValidator(), new StringLoadSaveValidator(), comparator, 10 ) );
 
-//    typeValidators.put( SdmxInputField[].class.getCanonicalName(), new ArrayLoadSaveValidator<SdmxInputField>( new SdmxInputFieldValidator() ) );
-//    typeValidators.put( Provider[].class.getCanonicalName(), new ArrayLoadSaveValidator<Provider>( new ProviderValidator(), 10 ) );
     typeValidators.put( Provider.class.getCanonicalName(),  new ProviderValidator() );
     typeValidators.put( Dataflow.class.getCanonicalName(),  new DataflowValidator() );
 
@@ -150,6 +155,89 @@ public class SdmxStepMetaLoadSaveTest {
           .append( testDataflow.getId(), anotherDataflow.getId() )
           .append( testDataflow.getName(), anotherDataflow.getName() )
           .isEquals();
+    }
+  }
+
+  public class DimensionLoadSaveValidator implements FieldLoadSaveValidator<Dimension> {
+
+    @Override
+    public Dimension getTestObject() {
+      Dimension d = new Dimension();
+      d.setId( UUID.randomUUID().toString() );
+      d.setPosition( new Random().nextInt(1000000)  ); //only positive integer
+      return d;
+    }
+
+    @Override
+    public boolean validateTestObject( Dimension testDimension, Object actualDimension ) {
+      if ( !( testDimension instanceof Dimension ) ) {
+        return false;
+      }
+      Dimension anotherDim = ( Dimension ) actualDimension;
+      return new EqualsBuilder()
+          .append( testDimension.getId(), anotherDim.getId() )
+          .append( testDimension.getPosition(), anotherDim.getPosition() )
+          .isEquals();
+    }
+  }
+
+  public class CustomMapLoadSaveValidator<KeyObjectType, ValueObjectType> implements
+      FieldLoadSaveValidator<Map<KeyObjectType, ValueObjectType>> {
+    private final FieldLoadSaveValidator<KeyObjectType> keyValidator;
+    private final FieldLoadSaveValidator<ValueObjectType> valueValidator;
+    private final Comparator<KeyObjectType> keyComparator;
+    private final Integer elements;
+
+    public CustomMapLoadSaveValidator( FieldLoadSaveValidator<KeyObjectType> keyFieldValidator,
+                                 FieldLoadSaveValidator<ValueObjectType> valueFieldValidator,
+                                       Comparator<KeyObjectType> keyFieldComparator ) {
+      keyValidator = keyFieldValidator;
+      valueValidator = valueFieldValidator;
+      keyComparator = keyFieldComparator;
+      elements = null;
+    }
+
+    public CustomMapLoadSaveValidator( FieldLoadSaveValidator<KeyObjectType> keyFieldValidator,
+                                 FieldLoadSaveValidator<ValueObjectType> valueFieldValidator,
+                                       Comparator<KeyObjectType> keyFieldComparator, Integer elements ) {
+      keyValidator = keyFieldValidator;
+      valueValidator = valueFieldValidator;
+      keyComparator = keyFieldComparator;
+      this.elements = elements;
+    }
+
+    @Override
+    public Map<KeyObjectType, ValueObjectType> getTestObject() {
+      int max = elements == null ? new Random().nextInt( 100 ) + 50 : elements;
+      Map<KeyObjectType, ValueObjectType> result = new TreeMap<KeyObjectType, ValueObjectType>( keyComparator );
+      for ( int i = 0; i < max; i++ ) {
+        result.put( keyValidator.getTestObject(), valueValidator.getTestObject() );
+      }
+      return result;
+    }
+
+    @Override
+    public boolean validateTestObject( Map<KeyObjectType, ValueObjectType> original, Object actual ) {
+      if ( actual instanceof Map ) {
+        @SuppressWarnings( "unchecked" )
+        Map<KeyObjectType, ValueObjectType> actualMap = (Map<KeyObjectType, ValueObjectType>) actual;
+        if ( original.size() != actualMap.size() ) {
+          System.out.println("bang size");
+          return false;
+        }
+        for ( KeyObjectType originalKey : original.keySet() ) {
+          if ( !actualMap.containsKey( originalKey ) ) {
+            System.out.println("bang not contained");
+            return false;
+          }
+          if ( !this.valueValidator.validateTestObject( original.get( originalKey ), actualMap.get( originalKey ) ) ) {
+            System.out.println("bang not equal");
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
   }
 }

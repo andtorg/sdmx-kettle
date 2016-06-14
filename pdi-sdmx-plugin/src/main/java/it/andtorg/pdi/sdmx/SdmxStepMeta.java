@@ -30,7 +30,6 @@ import it.bancaditalia.oss.sdmx.api.Dataflow;
 import it.bancaditalia.oss.sdmx.api.Dimension;
 import it.bancaditalia.oss.sdmx.client.Provider;
 import org.eclipse.swt.widgets.Shell;
-import org.omg.CORBA.portable.ValueBase;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
@@ -38,7 +37,6 @@ import org.pentaho.di.core.annotations.Step;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.*;
 import org.pentaho.di.core.row.RowMetaInterface;
-import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.row.value.ValueMetaBase;
 import org.pentaho.di.core.row.value.ValueMetaFactory;
@@ -188,7 +186,11 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 		this.dimensionToCodes.put( d, codes );
 	}
 
-	public void wipeDimensions() {
+  public void setDimensionToCodes(Map<Dimension, String> dimensionToCodes) {
+    this.dimensionToCodes = dimensionToCodes;
+  }
+
+  public void wipeDimensions() {
 		this.dimensionToCodes.clear();
 	}
 
@@ -259,14 +261,14 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 			Node dims = XMLHandler.getSubNode( stepnode, "dimensions" );
 			int nrDimensions = XMLHandler.countNodes( dims, "dimension" );
 
-			for ( int i = 0; i < nrDimensions; i++ ) {
-				Node dimNode = XMLHandler.getSubNodeByNr( dims, "dimension", i );
-				Dimension d = new Dimension();
-				d.setId( XMLHandler.getTagValue( dimNode, "dim_id" ) );
-				d.setPosition( Integer.parseInt( XMLHandler.getTagValue( dimNode, "dim_position" ) ) );
+      for ( int i = 0; i < nrDimensions; i++ ) {
+        Node dimNode = XMLHandler.getSubNodeByNr( dims, "dimension", i );
+        Dimension d = new Dimension();
+        d.setId( XMLHandler.getTagValue( dimNode, "dim_id" ) );
+        d.setPosition( Integer.parseInt( XMLHandler.getTagValue( dimNode, "dim_position" ) ) );
         String code = XMLHandler.getTagValue( dimNode, "dim_code" );
 				dimensionToCodes.put( d, ( code == null ? "" : code ) );
-			}
+      }
 
       Node fieldsNode = XMLHandler.getSubNode( stepnode, "fields" );
       int nrfields = XMLHandler.countNodes( fieldsNode, "field" );
@@ -317,6 +319,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 			rep.saveStepAttribute( id_transformation, id_step, "flow_id", dataflow.getId() );
 			rep.saveStepAttribute( id_transformation, id_step, "flow_desc", dataflow.getDescription() );
       rep.saveStepAttribute( id_transformation, id_step, "query_sdmx", getSdmxQuery() );
+
+      saveDimensionsToRepository( rep, id_transformation, id_step );
 		}
 		catch(Exception e){
 			throw new KettleException("Unable to save step into repository: "+id_step, e); 
@@ -339,7 +343,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       dataflow.setId( rep.getStepAttributeString( id_step, "flow_id" ) );
       dataflow.setName( rep.getStepAttributeString( id_step, "flow_desc" ) );
       setSdmxQuery( rep.getStepAttributeString( id_step, "query_sdmx" ) );
-		}
+      readDimensionsFromRepository( rep, id_step );
+    }
 		catch(Exception e){
 			throw new KettleException("Unable to load step from repository", e);
 		}
@@ -455,8 +460,8 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_position", d.getPosition() ) );
 				sb.append( "            " ).append( XMLHandler.addTagValue( "dim_code", dimensionToCodes.get( d ) == null ? "" :  dimensionToCodes.get( d ) ) );
 				sb.append( "        </dimension>" ).append( Const.CR );
-			}
-			sb.append( "    </dimensions>" ).append( Const.CR );
+      }
+      sb.append( "    </dimensions>" ).append( Const.CR );
 		}
 	}
 
@@ -477,6 +482,32 @@ public class SdmxStepMeta extends BaseStepMeta implements StepMetaInterface {
       sb.append( "      </field>" ).append( Const.CR );
     }
     sb.append( "    </fields>" ).append( Const.CR );
+  }
+
+  private void saveDimensionsToRepository( Repository rep, ObjectId id_transformation, ObjectId id_step) throws KettleException {
+    if ( dimensionToCodes != null && dimensionToCodes.keySet().size() > 0 ) {
+
+      int i = 0;
+      for ( Dimension d : dimensionToCodes.keySet() ) {
+        rep.saveStepAttribute( id_transformation, id_step, i, "dim_id", d.getId()  );
+        rep.saveStepAttribute( id_transformation, id_step, i, "dim_position", d.getPosition()  );
+        rep.saveStepAttribute( id_transformation, id_step, i, "dim_code", dimensionToCodes.get( d ) == null ? "" :  dimensionToCodes.get( d ) );
+        i++;
+      }
+    }
+  }
+
+  private void readDimensionsFromRepository( Repository rep, ObjectId id_step ) throws KettleException {
+    int nrDimensions = rep.countNrStepAttributes( id_step, "dim_id" );
+
+    for ( int i = 0; i < nrDimensions; i++ ) {
+      Dimension d = new Dimension();
+      d.setId( rep.getStepAttributeString( id_step, i, "dim_id") );
+      d.setPosition( Integer.parseInt( rep.getStepAttributeString( id_step, i, "dim_position" ) ) );
+      String code = rep.getStepAttributeString( id_step, i, "dim_code" );
+
+      dimensionToCodes.put( d, ( code == null ? "" : code ) );
+    }
   }
 
 }
