@@ -84,7 +84,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
                       <artifactId>sdmx</artifactId>
                       <version>${sdmx.java.version}</version>
                       <overWrite>true</overWrite>
-                      <outputDirectory>${project.build.directory}</outputDirectory>
+                      <outputDirectory>${project.build.directory}/lib</outputDirectory>
                     </artifactItem>
                   </artifactItems>
                   <overWriteReleases>false</overWriteReleases>
@@ -96,9 +96,28 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
           <plugin>
             <artifactId>maven-resources-plugin</artifactId>
             <version>${resource.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>copy-resources</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>${project.basedir}</directory>
+                      <includes>
+                        <include>version.xml</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
-
       </build>
     </profile>
   </profiles>
