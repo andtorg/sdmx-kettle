@@ -6,7 +6,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <groupId>it.andtorg.pdi-plugins</groupId>
   <artifactId>sdmx-kettle</artifactId>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <modules>
     <module>pdi-sdmx-plugin</module>
     <module>SDMX/JAVA</module>
