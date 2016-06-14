@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.steps.loadsave.LoadSaveTester;
+import org.pentaho.di.trans.steps.loadsave.validator.ArrayLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.FieldLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.MapLoadSaveValidator;
 import org.pentaho.di.trans.steps.loadsave.validator.StringLoadSaveValidator;
@@ -50,17 +51,18 @@ public class SdmxStepMetaLoadSaveTest {
   @Before
   public void setUp() throws Exception {
 
-    List<String> attributes = Arrays.asList( "provider", "dataflow", "sdmxQuery", "dimensionToCodes"  );
+    List<String> attributes = Arrays.asList( "provider", "dataflow", "sdmxQuery", "dimensionToCodes", "fields"  );
 
     Map<String,String> getters = new HashMap<>();
     getters.put( "provider", "getProvider" );
     getters.put( "dataflow", "getDataflow");
     getters.put( "sdmxQuery", "getSdmxQuery");
     getters.put( "dimensionToCodes", "getDimensionToCodes");
-
+    getters.put( "fields", "getInputFields" );
 
     Map<String,String> setters = new HashMap<>();
     setters.put( "provider", "setProvider" );
+    setters.put( "fields", "setInputFields" );
 
     Map<String, FieldLoadSaveValidator<?>> attributeValidators = new HashMap<>( );
     Map<String, FieldLoadSaveValidator<?>> typeValidators = new HashMap<>(  );
@@ -77,6 +79,8 @@ public class SdmxStepMetaLoadSaveTest {
 
     typeValidators.put( Provider.class.getCanonicalName(),  new ProviderValidator() );
     typeValidators.put( Dataflow.class.getCanonicalName(),  new DataflowValidator() );
+    typeValidators.put( SdmxInputField[].class.getCanonicalName(), new ArrayLoadSaveValidator<>(
+        new SdmxInputFieldValidator(), 10 ) );
 
     tester = new LoadSaveTester( SdmxStepMeta.class, attributes, getters, setters, attributeValidators,
         typeValidators );
