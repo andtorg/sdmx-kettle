@@ -117,7 +117,7 @@
               <execution>
                 <id>make-zip-release</id>
                 <configuration>
-                  <finalName>sdmx</finalName>
+                  <finalName>SdmxStep</finalName>
                   <appendAssemblyId>false</appendAssemblyId>
                   <descriptors>
                     <descriptor>assembly.xml</descriptor>
